@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+
+"""
+Prettyprints errors from LaTeX.
+Usage:
+    ./tex-errs mypaper.log
+"""
+
+import sys
+import re
+
+# Notes on parsing LaTeX .log files:
+# A log file is a sequence of messages.
+# A message can either be a bare string (e.g. "File: microtype.cfg 2013/05/23 v2.5a microtype main configuration file (RS)")
+# OR it can be a sublog (e.g. "(/usr/local/texlive/2014/texmf-dist/tex/latex/microtype/microtype.cfg <LOG>)")
+
+# TODO: I'll need to figure out how to deal with the fact that TeX often puts
+# newlines into your error messages:
+#  > LaTeX Warning: Reference `fig:fixing-set-alg' on page 15 undefined on input lin
+#  > e 1341.
+
+OVERFULL  = re.compile(r"(?P<msg>Overfull .*) in paragraph at lines (?P<start_line>\d+)--(?P<end_line>\d+)")
+OVERFULL2 = re.compile(r"(?P<msg>Overfull .*) detected at line (?P<start_line>\d+)")
+UNDERFULL = re.compile(r"(?P<msg>Underfull .*) in paragraph at lines (?P<start_line>\d+)--(?P<end_line>\d+)")
+OTHER_FULLNESS = re.compile(r"(?P<msg>(?:Overfull|Underfull).*) has occurred while \\output is active")
+CAPTION = re.compile("(?P<msg>" + re.escape("Package caption Warning: Unsupported document class (or package) detected") + ")")
+PDFTEX_WARN = re.compile(re.escape("pdfTeX warning (dest): ") + "(?P<msg>.*)")
+WARN = re.compile(r"LaTeX Warning: (?P<msg>.*) on input l\n?i\n?n\n?e (?P<start_line>\d+)")
+# UNDEF_MACRO = re.compile(r"! Undefined control sequence\.\n.*?l\.(?P<start_line>\d+) (?P<msg>[^\n]*)", re.DOTALL)
+PKG_ERR = re.compile(r"! Package (?P<pkg>\w+) Error: (?P<msg>.+(?:\n\((?P=pkg)\).*)*)See the .* package documentation for explanation.*l\.(?P<start_line>\d+)", re.DOTALL)
+PKG_WARN = re.compile(r"Package (?P<pkg>\w+) Warning: (?P<msg>.+(?:\n\((?P=pkg)\).*)*) on input line (?P<start_line>(:?\s*\d)+)\.")
+FONT_WARN = re.compile(r"LaTeX Font Warning: (?P<msg>.*) on input line (?P<start_line>(:?\s*\d)+)")
+OTHER_WARN = re.compile(r"LaTeX Warning: (?P<msg>.*)\.")
+OTHER_ERR = re.compile(r"! (?P<msg>[^\n]*)\.\n.*?l\.(?P<start_line>\d+)", re.DOTALL)
+
+# formatting
+BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+ERROR, WARNING, INFO = range(3)
+RESET_SEQ = "\033[0m"
+COLOR_SEQ = "\033[3{}m"
+BOLD_SEQ = "\033[1m"
+
+REPORT_CATEGORIES = {
+    INFO: [],
+    WARNING: [OVERFULL, OVERFULL2, UNDERFULL, OTHER_FULLNESS, CAPTION, PKG_WARN, FONT_WARN, WARN, PDFTEX_WARN, OTHER_WARN],
+    ERROR: [PKG_ERR, OTHER_ERR],
+}
+
+PKG_KILLNLS = re.compile(r"(\S)\n(\S)")
+PKG_CLEANUP = re.compile(r"\n\(\w+\)\s+")
+def cleanup_pkg_warn(s):
+    return PKG_CLEANUP.sub(" ", PKG_KILLNLS.sub(r"\1\2", s)).strip()
+
+FORMATTERS = {
+    PKG_WARN: cleanup_pkg_warn,
+    PKG_ERR:  cleanup_pkg_warn,
+}
+
+FILENAME_CHAR = r"\w\d\-_\/\."
+NEW_FILE = re.compile(r"\(([{fchar}]*\/[{fchar}]+)[^{fchar}]".format(fchar=FILENAME_CHAR))
+WRAPPED_LINES = re.compile(r"(.{79})\n([^\n])")
+def parse(filename):
+    stk = []
+    s = ""
+    with open(filename, "rb") as f:
+        text = f.read()
+    text = text.decode("utf-8", "ignore")
+    text = WRAPPED_LINES.sub(r"\1\2", text)
+    for line in text.split("\n"):
+        line += "\n"
+        i = 0
+        while i < len(line):
+            c = line[i]
+            if c == "(":
+                m = NEW_FILE.match(line, pos=i)
+                if m and m.group(1):
+                    fname = m.group(1)
+                    if s:
+                        yield ("text", s)
+                        s = ""
+                    stk.append(fname)
+                    yield ("push", fname)
+                    i = m.end() - 1
+                    continue
+                else:
+                    stk.append(None)
+                    s += c
+            elif c == ")":
+                if not stk:
+                    s += c
+                elif stk[-1]:
+                    if s:
+                        yield ("text", s)
+                        s = ""
+                    yield ("pop", stk[-1])
+                    del stk[-1]
+                else:
+                    s += c
+                    del stk[-1]
+            else:
+                s += c
+            i += 1
+    if s:
+        yield ("text", s)
+
+def err_reports(filename):
+    files = []
+    for action, arg in parse(filename):
+        if action == "push":
+            files.append(arg)
+        elif action == "pop":
+            del files[-1]
+        elif action == "text":
+            if not files:
+                continue
+            fname = files[-1]
+            for regex, category, msg, start_line, end_line in find_errs(arg):
+                yield (fname, regex, category, msg, start_line, end_line)
+
+WHITESPACE = re.compile(r"\s+")
+def sws(s):
+    """strip whitespace"""
+    return WHITESPACE.sub("", s)
+
+def overlaps_any(match, matches):
+    for m in matches:
+        if match.start() < m.end() and match.end() >= m.start():
+            return True
+    return False
+
+def find_errs(log_contents):
+    matches = []
+    for category in [INFO, WARNING, ERROR]:
+        for regex in REPORT_CATEGORIES.get(category, []):
+            for match in regex.finditer(log_contents):
+                if overlaps_any(match, matches):
+                    continue
+                matches.append(match)
+                data = match.groupdict()
+                msg = data.get("msg")
+                start_line = data.get("start_line")
+                start_line = int(sws(start_line)) if start_line is not None else start_line
+                end_line = data.get("end_line", str(start_line) if start_line is not None else start_line)
+                end_line = int(sws(end_line)) if end_line is not None else end_line
+                yield (regex, category, msg, start_line, end_line)
+
+def format_report(file, regex, category, msg, start_line, end_line):
+    cat_str = "Info"
+    if category == WARNING:
+        cat_str = BOLD_SEQ + COLOR_SEQ.format(YELLOW) + "Warning" + RESET_SEQ
+    elif category == ERROR:
+        cat_str = BOLD_SEQ + COLOR_SEQ.format(RED) + "Error" + RESET_SEQ
+
+    line_info = "unknown line"
+    if start_line is not None and (end_line is None or start_line == end_line):
+        line_info = "line {}".format(start_line)
+    elif start_line is not None and end_line is not None:
+        line_info = "lines {}-{}".format(start_line, end_line)
+
+    msg = FORMATTERS.get(regex, lambda s: s)(msg)
+
+    return "{} ({}, {}): {}".format(cat_str, file, line_info, msg)
+
+def err_sort_key(info):
+    return (info[0] or 0, info[4] or 0, info[3] or 0)
+
+def run():
+    log = sys.argv[1]
+    infos = sorted(list(err_reports(log)), key=err_sort_key)
+    for info in infos:
+        print(format_report(*info))
+    if not infos:
+        print("{}{}No TeX issues!{}".format(BOLD_SEQ, COLOR_SEQ.format(GREEN), RESET_SEQ))
+
+if __name__ == "__main__":
+    run()
