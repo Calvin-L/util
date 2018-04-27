@@ -78,6 +78,8 @@ def parse_cache_control_header(s):
     public = True
     max_age_seconds = 0
     for p in parts:
+        if not p:
+            continue
         if p == "private":
             public = False
         elif p == "no-cache":
