@@ -12,10 +12,14 @@ when possible.
 """
 
 import argparse
+import collections
+import json
 import os
+import re
 import sys
 import subprocess
 import tempfile
+import time
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 
@@ -26,7 +30,7 @@ arg_parser.add_argument("OUT_FILE", help="Output file")
 args = arg_parser.parse_args()
 
 def warn(s):
-    print(s)
+    print("WARNING:", s)
 
 def info(s):
     if args.verbose:
@@ -35,18 +39,45 @@ def info(s):
 url = args.URL
 out_path = args.OUT_FILE
 out_etag_path = out_path + ".etag"
-
-info("Checking remote resource {} ---> {}".format(url, out_path))
+CacheControl = collections.namedtuple("CacheControl", ["cache_allowed", "public", "max_age_seconds"])
 
 out_etag = None
+cc = None
 if os.path.exists(out_path):
     try:
         with open(out_etag_path, "r") as f:
-            out_etag = f.read()
+            out_etag, cc = json.load(f)
+        if cc is not None:
+            cc = CacheControl(*cc)
     except FileNotFoundError:
         info("File {} did not exist, skipping etag checking".format(out_etag_path))
         pass
+    except:
+        warn("Failed to read {}".format(out_etag_path))
+    info("Old ETag: {!r}".format(out_etag))
+    info("Cache control: {!r}".format(cc))
 
+    if cc is not None and os.path.getmtime(out_path) + cc.max_age_seconds > time.time():
+        info("Cache control allows skipping HTTP request")
+        sys.exit(0)
+
+def parse_cache_control_header(s):
+    parts = [part.strip().lower() for part in s.split(",")]
+    cache_allowed = False
+    public = True
+    max_age_seconds = 0
+    for p in parts:
+        if p == "private":
+            public = False
+        elif p == "no-cache":
+            cache_allowed = False
+        elif re.match(r"^max-age=(\d+)$", p):
+            max_age_seconds = int(p[8:])
+        else:
+            warn("unknown value in Cache-Control header: {!r}".format(p))
+    return CacheControl(cache_allowed=cache_allowed, public=public, max_age_seconds=max_age_seconds)
+
+info("Checking remote resource {} ---> {}".format(url, out_path))
 try:
     etag = None
     with urlopen(
@@ -54,16 +85,20 @@ try:
             headers={"If-None-Match": out_etag} if out_etag is not None else {})) as response:
         with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp_file:
             etag = response.getheader("ETag")
-            info("Got a response [etag={!r}]".format(etag))
+            cc   = response.getheader("Cache-Control")
+            info("Got a response [etag={!r}, cache={!r}]".format(etag, cc))
+            cc = parse_cache_control_header(cc)
             tmp_file.write(response.read())
-            if subprocess.run(["cmp", out_path, tmp_file.name]).returncode != 0:
-                print("Fetched new version of {}".format(out_path))
-                os.rename(tmp_file.name, out_path)
-            else:
-                os.unlink(tmp_file.name)
+        if subprocess.run(["cmp", out_path, tmp_file.name]).returncode != 0:
+            print("Fetched new version of {}".format(out_path))
+            os.rename(tmp_file.name, out_path)
+        else:
+            info("Bytes of {} are unchanged".format(out_path))
+            os.unlink(tmp_file.name)
     if etag is not None:
+        info("Dumping cache info to {}".format(out_etag_path))
         with open(out_etag_path, "w") as f:
-            f.write(etag)
+            json.dump([etag, cc], f)
 except HTTPError as e:
     if e.code == 304:
         info("File {} is unchanged".format(out_path))
