@@ -8,14 +8,14 @@ For usage information:
 
 This script does not change the modification time of OUTPUT_FILE if the remote
 resource has not changed.  It writes to OUTPUT_FILE.etag to avoid re-downloading
-when possible.  It also writes to OUTPUT_FILE.tmp to avoid changing modification
-times if the bytes are identical.
+when possible.
 """
 
 import argparse
 import os
 import sys
 import subprocess
+import tempfile
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 
@@ -35,7 +35,6 @@ def info(s):
 url = args.URL
 out_path = args.OUT_FILE
 out_etag_path = out_path + ".etag"
-out_tmp_path = out_path + ".tmp"
 
 info("Checking remote resource {} ---> {}".format(url, out_path))
 
@@ -49,16 +48,22 @@ if os.path.exists(out_path):
         pass
 
 try:
+    etag = None
     with urlopen(
         Request(url,
             headers={"If-None-Match": out_etag} if out_etag is not None else {})) as response:
-        etag = response.getheader("ETag")
-        info("Got a response [etag={!r}]".format(etag))
-        if etag is not None:
-            with open(out_etag_path, "w") as f:
-                f.write(etag)
-        with open(out_tmp_path, "wb") as f:
-            f.write(response.read())
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp_file:
+            etag = response.getheader("ETag")
+            info("Got a response [etag={!r}]".format(etag))
+            tmp_file.write(response.read())
+            if subprocess.run(["cmp", out_path, tmp_file.name]).returncode != 0:
+                print("Fetched new version of {}".format(out_path))
+                os.rename(tmp_file.name, out_path)
+            else:
+                os.unlink(tmp_file.name)
+    if etag is not None:
+        with open(out_etag_path, "w") as f:
+            f.write(etag)
 except HTTPError as e:
     if e.code == 304:
         info("File {} is unchanged".format(out_path))
@@ -68,9 +73,3 @@ except HTTPError as e:
 except URLError:
     warn("Failed to update {}... are you offline?".format(out_path), file=sys.stderr)
     sys.exit(0 if os.path.exists(out_path) else 1)
-
-if subprocess.run(["cmp", out_path, out_tmp_path]).returncode != 0:
-    print("Fetched new version of {}".format(out_path))
-    os.rename(out_tmp_path, out_path)
-else:
-    os.unlink(out_tmp_path)
