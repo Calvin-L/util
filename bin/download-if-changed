@@ -3,8 +3,8 @@
 """
 Download a file if it has changed.
 
-Usage:
-    download-if-changed URL OUTPUT_FILE
+For usage information:
+    download-if-changed -h
 
 This script does not change the modification time of OUTPUT_FILE if the remote
 resource has not changed.  It writes to OUTPUT_FILE.etag to avoid re-downloading
@@ -12,18 +12,32 @@ when possible.  It also writes to OUTPUT_FILE.tmp to avoid changing modification
 times if the bytes are identical.
 """
 
+import argparse
 import os
 import sys
 import subprocess
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 
-url = sys.argv[1]
-out_path = sys.argv[2]
+arg_parser = argparse.ArgumentParser(description="Downloader")
+arg_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
+arg_parser.add_argument("URL", help="URL to download")
+arg_parser.add_argument("OUT_FILE", help="Output file")
+args = arg_parser.parse_args()
+
+def warn(s):
+    print(s)
+
+def info(s):
+    if args.verbose:
+        print(s)
+
+url = args.URL
+out_path = args.OUT_FILE
 out_etag_path = out_path + ".etag"
 out_tmp_path = out_path + ".tmp"
 
-# print("Checking remote resource {} ---> {}".format(url, out_path))
+info("Checking remote resource {} ---> {}".format(url, out_path))
 
 out_etag = None
 if os.path.exists(out_path):
@@ -31,7 +45,7 @@ if os.path.exists(out_path):
         with open(out_etag_path, "r") as f:
             out_etag = f.read()
     except FileNotFoundError:
-        # print("File {} did not exist, skipping etag checking".format(out_etag_path))
+        info("File {} did not exist, skipping etag checking".format(out_etag_path))
         pass
 
 try:
@@ -39,7 +53,7 @@ try:
         Request(url,
             headers={"If-None-Match": out_etag} if out_etag is not None else {})) as response:
         etag = response.getheader("ETag")
-        # print("Got a response [etag={!r}]".format(etag))
+        info("Got a response [etag={!r}]".format(etag))
         if etag is not None:
             with open(out_etag_path, "w") as f:
                 f.write(etag)
@@ -47,12 +61,12 @@ try:
             f.write(response.read())
 except HTTPError as e:
     if e.code == 304:
-        # print("File {} is unchanged".format(out_path))
+        info("File {} is unchanged".format(out_path))
         sys.exit(0)
     else:
         raise
 except URLError:
-    print("Failed to update {}... are you offline?".format(out_path), file=sys.stderr)
+    warn("Failed to update {}... are you offline?".format(out_path), file=sys.stderr)
     sys.exit(0 if os.path.exists(out_path) else 1)
 
 if subprocess.run(["cmp", out_path, out_tmp_path]).returncode != 0:
