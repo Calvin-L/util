@@ -106,7 +106,7 @@ try:
             etag = response.getheader("ETag")
             cc   = response.getheader("Cache-Control")
             info("Got a response [etag={!r}, cache={!r}]".format(etag, cc))
-            cc = parse_cache_control_header(cc)
+            cc = parse_cache_control_header(cc or "")
             shutil.copyfileobj(response, tmp_file)
             tmp_file.write(response.read())
         if subprocess.run(["cmp", out_path, tmp_file.name]).returncode != 0:
