@@ -16,6 +16,7 @@ import collections
 import json
 import os
 import re
+import shutil
 import sys
 import subprocess
 import tempfile
@@ -41,29 +42,39 @@ out_path = args.OUT_FILE
 out_etag_path = out_path + ".etag"
 CacheControl = collections.namedtuple("CacheControl", ["cache_allowed", "public", "max_age_seconds"])
 
+def format_date(secs_since_epoch):
+    if secs_since_epoch is None:
+        return None
+    return time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(secs_since_epoch))
+
 out_etag = None
 cc = None
+last_modified = None
 if os.path.exists(out_path):
     try:
         with open(out_etag_path, "r") as f:
-            out_etag, cc = json.load(f)
+            d = json.load(f)
+            out_etag = d.get("etag")
+            cc = CacheControl(**d["cache-control"]) if "cache-control" in d else None
+            last_modified = int(d["last-check-time"]) if "last-check-time" in d else None
         if cc is not None:
             cc = CacheControl(*cc)
     except FileNotFoundError:
         info("File {} did not exist, skipping etag checking".format(out_etag_path))
         pass
-    except:
+    except Exception as e:
         warn("Failed to read {}".format(out_etag_path))
+        info("Error was: {!r}".format(e))
     info("Old ETag: {!r}".format(out_etag))
     info("Cache control: {!r}".format(cc))
-
-    if cc is not None and os.path.getmtime(out_path) + cc.max_age_seconds > time.time():
+    info("Last checked: {}".format(format_date(last_modified)))
+    if cc is not None and cc.cache_allowed and last_modified + cc.max_age_seconds > time.time():
         info("Cache control allows skipping HTTP request")
         sys.exit(0)
 
 def parse_cache_control_header(s):
     parts = [part.strip().lower() for part in s.split(",")]
-    cache_allowed = False
+    cache_allowed = True
     public = True
     max_age_seconds = 0
     for p in parts:
@@ -80,6 +91,14 @@ def parse_cache_control_header(s):
 info("Checking remote resource {} ---> {}".format(url, out_path))
 try:
     etag = None
+    headers = { }
+    if out_etag is not None:
+        headers["If-None-Match"] = out_etag
+        info("Header If-None-Match: {}".format(out_etag))
+    if last_modified is not None:
+        t = format_date(last_modified)
+        headers["If-Modified-Since"] = t
+        info("Header If-Modified-Since: {}".format(t))
     with urlopen(
         Request(url,
             headers={"If-None-Match": out_etag} if out_etag is not None else {})) as response:
@@ -88,6 +107,7 @@ try:
             cc   = response.getheader("Cache-Control")
             info("Got a response [etag={!r}, cache={!r}]".format(etag, cc))
             cc = parse_cache_control_header(cc)
+            shutil.copyfileobj(response, tmp_file)
             tmp_file.write(response.read())
         if subprocess.run(["cmp", out_path, tmp_file.name]).returncode != 0:
             print("Fetched new version of {}".format(out_path))
@@ -98,10 +118,13 @@ try:
     if etag is not None:
         info("Dumping cache info to {}".format(out_etag_path))
         with open(out_etag_path, "w") as f:
-            json.dump([etag, cc], f)
+            json.dump({
+                "etag": etag,
+                "cache-control": cc._asdict(),
+                "last-check-time": time.time()}, f)
 except HTTPError as e:
     if e.code == 304:
-        info("File {} is unchanged".format(out_path))
+        info("Remote server reports {} is unchanged".format(out_path))
         sys.exit(0)
     else:
         raise
