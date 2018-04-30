@@ -50,6 +50,7 @@ def format_date(secs_since_epoch):
 out_etag = None
 cc = None
 last_modified = None
+now = time.time()
 if os.path.exists(out_path):
     try:
         with open(out_etag_path, "r") as f:
@@ -68,7 +69,7 @@ if os.path.exists(out_path):
     info("Old ETag: {!r}".format(out_etag))
     info("Cache control: {!r}".format(cc))
     info("Last checked: {}".format(format_date(last_modified)))
-    if cc is not None and cc.cache_allowed and last_modified + cc.max_age_seconds > time.time():
+    if cc is not None and cc.cache_allowed and last_modified + cc.max_age_seconds > now:
         info("Cache control allows skipping HTTP request")
         sys.exit(0)
 
@@ -92,7 +93,7 @@ def parse_cache_control_header(s):
 
 info("Checking remote resource {} ---> {}".format(url, out_path))
 try:
-    etag = None
+    etag = out_etag
     headers = { }
     if out_etag is not None:
         headers["If-None-Match"] = out_etag
@@ -117,19 +118,18 @@ try:
         else:
             info("Bytes of {} are unchanged".format(out_path))
             os.unlink(tmp_file.name)
-    if etag is not None:
-        info("Dumping cache info to {}".format(out_etag_path))
-        with open(out_etag_path, "w") as f:
-            json.dump({
-                "etag": etag,
-                "cache-control": cc._asdict(),
-                "last-check-time": time.time()}, f)
 except HTTPError as e:
     if e.code == 304:
         info("Remote server reports {} is unchanged".format(out_path))
-        sys.exit(0)
     else:
         raise
 except URLError:
     warn("Failed to update {}... are you offline?".format(out_path), file=sys.stderr)
     sys.exit(0 if os.path.exists(out_path) else 1)
+
+info("Dumping cache info to {}".format(out_etag_path))
+with open(out_etag_path, "w") as f:
+    json.dump({
+        "etag": etag,
+        "cache-control": cc._asdict(),
+        "last-check-time": now}, f)
