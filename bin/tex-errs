@@ -24,7 +24,7 @@ OVERFULL2 = re.compile(r"(?P<msg>Overfull .*) detected at line (?P<start_line>\d
 UNDERFULL = re.compile(r"(?P<msg>Underfull .*) in paragraph at lines (?P<start_line>\d+)--(?P<end_line>\d+)")
 OTHER_FULLNESS = re.compile(r"(?P<msg>(?:Overfull|Underfull).*) has occurred while \\output is active")
 CAPTION = re.compile("(?P<msg>" + re.escape("Package caption Warning: Unsupported document class (or package) detected") + ")")
-PDFTEX_WARN = re.compile(re.escape("pdfTeX warning (dest): ") + "(?P<msg>.*)")
+PDFTEX_WARN = re.compile(re.escape("pdfTeX warning (") + r"\w*" + re.escape("): ") + r"(?P<msg>.*)")
 WARN = re.compile(r"LaTeX Warning: (?P<msg>.*) on input l\n?i\n?n\n?e (?P<start_line>\d+)")
 # UNDEF_MACRO = re.compile(r"! Undefined control sequence\.\n.*?l\.(?P<start_line>\d+) (?P<msg>[^\n]*)", re.DOTALL)
 PKG_ERR = re.compile(r"! Package (?P<pkg>\w+) Error: (?P<msg>.+(?:\n\((?P=pkg)\).*)*)See the .* package documentation for explanation.*l\.(?P<start_line>\d+)", re.DOTALL)
