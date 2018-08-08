@@ -124,7 +124,7 @@ except HTTPError as e:
     else:
         raise
 except URLError:
-    warn("Failed to update {}... are you offline?".format(out_path), file=sys.stderr)
+    warn("Failed to update {}... are you offline?".format(out_path))
     sys.exit(0 if os.path.exists(out_path) else 1)
 
 info("Dumping cache info to {}".format(out_etag_path))
