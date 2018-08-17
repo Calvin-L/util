@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import argparse
+import datetime
+import sys
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Prepend each line of stdin with a timestamp.  Useful if "
+            + "you want to log when events happened when running a script.")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("-a", "--absolute", action="store_true",
+        help="Prepend each line with the current time.")
+    mode.add_argument("-r", "--relative", action="store_true",
+        help="Prepend each line with the time since the script's start (this is the default behavior).")
+
+    args = parser.parse_args()
+
+    start = datetime.datetime.now()
+    for line in sys.stdin:
+        now = datetime.datetime.now()
+        if args.absolute:
+            to_write = now
+        else:
+            delta = now - start
+            to_write = delta
+        sys.stdout.write("[{}] ".format(to_write))
+        sys.stdout.write(line)
