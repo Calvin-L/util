@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Shorthand for `git push`.
+# Accepts all the same flags.
+
+exec git push "$@"

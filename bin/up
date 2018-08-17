@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Do a smart git pull (think "UPdate" a repository).
+# Usage:
+#   $ up
+# Performs the following tasks:
+#   - if you have uncommitted changes, stash them
+#   - run `git pull --rebase`
+#   - if we stashed changes earlier, unstash them
+# Notes:
+#   - if the pull fails, your changes are not unstashed
+#   - if the unstash fails, your changes remain in the stash (normal git-stash
+#     behavior)
+
+set -e
+
+num_stashes_1=`git stash list | wc -l`
+git stash
+num_stashes_2=`git stash list | wc -l`
+
+git pull --rebase
+
+if [ $num_stashes_2 -gt $num_stashes_1 ]
+then
+    git stash pop
+fi
