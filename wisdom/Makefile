@@ -21,6 +21,14 @@ SHELL = /bin/bash
 # you really plan to use them.
 .SUFFIXES:
 
+# Mark all intermediate targets as secondaries.  This
+# prevents a bizarre (to me) default behavior of Make
+# where built files from pattern rules get deleted
+# after the build unless they were one of the targets
+# you specified on the command line.
+# See: https://stackoverflow.com/questions/17625394/secondary-for-a-pattern-rule-with-gnu-make
+.SECONDARY:
+
 # https://www.gnu.org/software/make/manual/make.html#Phony-Targets, 2018-04-13:
 #  > A phony target should not be a prerequisite of a real target file; if it
 #  > is, its recipe will be run every time make goes to update that file. As
