@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Output a histogram of the lines in stdin.  "
+            + "Each line of output has a count, a space, and a line of text "
+            + "indicating the line appeared that many times.  The lines are "
+            + "sorted alphabetically; you might want to pipe this script's "
+            + "output to `sort -n` to sort them by frequency.")
+
+    args = parser.parse_args()
+
+    histogram = { }
+    for line in sys.stdin:
+        line = line.strip()
+        if line not in histogram:
+            histogram[line] = 0
+        histogram[line] += 1
+
+    for line in sorted(histogram.keys(), key=histogram.get, reverse=True):
+        print("{:10} {}".format(histogram[line], line))
