@@ -7,16 +7,19 @@ function __gitinfo() {
 
 function __prompt() {
 	local EXIT="$?" # return code of last process
-    local GREEN='\[\e[01;32m\]'
-    local RED='\[\e[01;31m\]'
-    local RESET='\[\e[00m\]'
-	local END="$(if [ $EXIT == 0 ]; then echo "$GREEN"; else echo "$RED"; fi)$"
-	PS1="\[\e[00;36m\]\w\[\e[00;33m\]$(__gitinfo) ${END} ${RESET}"
+    local GREEN='01;32m'
+    local RED='01;31m'
+    if [[ "$EXIT" == "0" ]]; then
+        __EXIT_STATUS_COLOR="${GREEN}"
+    else
+        __EXIT_STATUS_COLOR="${RED}"
+    fi
 }
 
 export CLICOLOR=yes # colors for ls
 export LS_COLORS='rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32'; # colors for tree, generated using dircolors on linux
 export PROMPT_COMMAND="__prompt;$PROMPT_COMMAND"
+export PS1='\[\e[00;36m\]\w\[\e[00;33m\]$(__gitinfo) \[\e[${__EXIT_STATUS_COLOR}\]\$ \[\e[00m\]'
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin"
 export PATH="$HOME/.cabal/bin:$PATH"
 # export PATH="$HOME/Library/Python/3.6/bin:$PATH"
