@@ -71,5 +71,4 @@ done
 # . /Users/loncaric/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
 
 # Nix
-# if [ -e /Users/loncaric/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/loncaric/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-# unset SSL_CERT_FILE # what on earth are you doing, nix
+if [ -e /Users/loncaric/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/loncaric/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
