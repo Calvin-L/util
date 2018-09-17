@@ -63,9 +63,11 @@ else
     export JAVA_HOME="$(/usr/libexec/java_home)"
 fi
 
-for F in $(ls /usr/local/etc/bash_completion.d | fgrep -v ctest); do
-    source "/usr/local/etc/bash_completion.d/$F"
-done
+if [[ -d /usr/local/etc/bash_completion.d ]]; then
+	for F in $(ls /usr/local/etc/bash_completion.d | fgrep -v ctest); do
+	    source "/usr/local/etc/bash_completion.d/$F"
+	done
+fi
 
 # OPAM configuration
 # . $HOME/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
