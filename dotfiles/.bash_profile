@@ -1,12 +1,12 @@
 function __gitinfo() {
-	if [ -d .git ] || git rev-parse --git-dir >/dev/null 2>&1
-	then
-		echo -n " [$(git rev-parse --abbrev-ref HEAD 2>/dev/null)]"
-	fi
+    if [ -d .git ] || git rev-parse --git-dir >/dev/null 2>&1
+    then
+        echo -n " [$(git rev-parse --abbrev-ref HEAD 2>/dev/null)]"
+    fi
 }
 
 function __prompt() {
-	local EXIT="$?" # return code of last process
+    local EXIT="$?" # return code of last process
     local GREEN='01;32m'
     local RED='01;31m'
     if [[ "$EXIT" == "0" ]]; then
@@ -68,9 +68,9 @@ else
 fi
 
 if [[ -d /usr/local/etc/bash_completion.d ]]; then
-	for F in $(ls /usr/local/etc/bash_completion.d | fgrep -v ctest); do
-	    source "/usr/local/etc/bash_completion.d/$F"
-	done
+    for F in $(ls /usr/local/etc/bash_completion.d | fgrep -v ctest); do
+        source "/usr/local/etc/bash_completion.d/$F"
+    done
 fi
 
 # OPAM configuration
