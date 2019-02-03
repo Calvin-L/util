@@ -1,8 +1,8 @@
 # SSH client configuration
 # Install this file as ~/.ssh/config for it to take effect.
 
-# Ping the other side every 120 seconds to keep
+# Ping the other side every 30 seconds to keep
 # the connection from being terminated.
 Host *
-    ServerAliveInterval 120
+    ServerAliveInterval 30
     ServerAliveCountMax 2
