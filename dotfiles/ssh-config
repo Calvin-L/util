@@ -6,3 +6,9 @@
 Host *
     ServerAliveInterval 30
     ServerAliveCountMax 2
+
+# If you can control the server configuration (/etc/ssh/sshd_config), you might
+# want these also:
+# ClientAliveInterval 30
+# ClientAliveCountMax 3
+# PermitRootLogin no
