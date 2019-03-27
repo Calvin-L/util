@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+
+import argparse
+import re
+from subprocess import run, PIPE
+import sys
+from threading import Thread, Lock
+
+p = argparse.ArgumentParser(
+    description="Locate a Java class that may be hidden inside a .jar file somewhere.  "
+        + "The results are printed to stdout.  Diagnostic messages are printed to "
+        + "stderr.")
+p.add_argument("folder", help="The folder to search for .jar files.")
+p.add_argument("pattern", help="A case-sensitive regex to search for class names.")
+args = p.parse_args()
+
+where = args.folder
+pattern = re.compile(args.pattern)
+whitespace = re.compile(r"\s+")
+stderr_lock = Lock()
+stdout_lock = Lock()
+
+def debug(s):
+    with stderr_lock:
+        print(s, file=sys.stderr)
+
+def lines(s):
+    for line in whitespace.split(s):
+        if line:
+            yield line
+
+def threaded_foreach(things, f, nthreads=None):
+    assert isinstance(things, list)
+    if nthreads is None:
+        from multiprocessing import cpu_count
+        nthreads = cpu_count()
+    threads = []
+
+    for i in range(nthreads):
+        def go(offset=i):
+            for i in range(offset, len(things), nthreads):
+                f(things[i])
+        t = Thread(target=go)
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+def search_jar(jar):
+    debug("Searching {}".format(jar))
+    contents = run(["jar", "tf", jar], check=True, stdout=PIPE).stdout.decode("ascii")
+    for x in lines(contents):
+        if pattern.search(x):
+            out = "In {}: {}".format(jar, x)
+            with stdout_lock:
+                print(out)
+
+debug("Finding JARs...")
+jars = run(["find", where, "-iname", "*.jar", "-or", "-iname", "*.zip"], check=True, stdout=PIPE).stdout.decode("ascii")
+threaded_foreach(sorted(lines(jars)), search_jar)
