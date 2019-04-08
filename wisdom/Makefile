@@ -27,6 +27,16 @@ SHELL = /bin/bash
 # after the build unless they were one of the targets
 # you specified on the command line.
 # See: https://stackoverflow.com/questions/17625394/secondary-for-a-pattern-rule-with-gnu-make
+# NOTE: unfortunately, this also has the effect of marking every file as an
+# "intermediate" file, which can have unintended effects.  In particular, Make
+# does not rebuild files that have missing inputs if those inputs are
+# "intermeidate" files.  However, if a file needs to be rebuilt for another
+# reason, then its missing inputs will be rebuilt first.
+# See: https://www.gnu.org/software/make/manual/make.html#Chained-Rules
+# If at all possible, use "static" pattern rules instead of .SECONDARY to
+# preserve intermediate files, since it does not have the aforementioned
+# negative effect.
+# See: https://www.gnu.org/software/make/manual/make.html#Static-Pattern
 .SECONDARY:
 
 # https://www.gnu.org/software/make/manual/make.html#Phony-Targets, 2018-04-13:
