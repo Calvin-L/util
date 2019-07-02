@@ -28,27 +28,29 @@ fib[n \in Nat] == IF n <= 1 THEN 1 ELSE fib[n-1] + fib[n-2]
 \*
 \* Some useful steps:
 \*  https://tla.msr-inria.inria.fr/tlaps/content/Documentation/Tutorial/Other_proof_constructs.html
-\*  TAKE x [\in S]
-\*    -- transforms the goal from "\A x [\in S]: P" to "P" assuming "NEW x [\in S]"
+\*  TAKE x [\in S] [, ...]
+\*    -- used to prove universal formulas
+\*    -- transforms the goal from "\A x [\in S]: P" to "x [\in S] |- P"
+\*  WITNESS value [\in S] [, ...]
+\*    -- used to prove existence formulas
+\*    -- transforms a goal of the form \E x \in S: P(x) to the goal P(value)
+\*  SUFFICES P [PROOF]
+\*    -- proves that P |- GOAL by the given proof
+\*    -- changes the goal to P
+\*  DEFINE op(args) == body
+\*    -- introduces a local definition
+\*
+\* Some useful constructs that might look like steps because they involve keywords, but are NOT
+\* actually steps:
 \*  ASSUME P1, P2, ... PROVE Q [PROOF]
-\*    -- asserts (P1 /\ P2 /\ ...) |- Q by the given proof
+\*    -- this is how you write the formula "P1, P2, ... |- Q"
+\*    -- formulas do not nest; you cannot write "ASSUME ... PROVE (ASSUME ... PROVE P)"
 \*    -- NOTE: frustratingly, to exploit the hypotheses P1, P2, etc. in proving Q, you usually need
 \*       to do a proof "BY <NAME>" where <NAME> is the name of this ASSUME step.  I have no idea why.
 \*       It seems to be unnecessary if it is an unnamed step.
 \*  CASE P [PROOF]
 \*    -- equivalent to ASSUME P PROVE G [PROOF] where G is the current goal
 \*    -- NOTE: the same awful note about ASSUME applies here
-\*  SUFFICES P [PROOF]
-\*    -- proves that P |- GOAL by the given proof
-\*    -- changes the goal to P
-\*  DEFINE op(args) == body
-\*    -- introduces a local definition
-\*  WITNESS value \in S [, ...]
-\*    -- used to prove existence formulas
-\*    -- transforms a goal of the form \E x \in S: P(x) to the goal P(value)
-\*  TAKE x \in S [, ...]
-\*    -- used to prove universally quantified formulas
-\*    -- transforms a goal of the form \A x \in S: P(x) to the goal x \in S |- P(x)
 \*
 \* The monsterous TLA+ Hyperbook has a "proofs track" that is the best existing manual for TLAPS.
 \* In particular, Section 12.3 "The State of a Proof" is enormously valuable.
