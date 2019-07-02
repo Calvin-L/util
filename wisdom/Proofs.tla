@@ -145,7 +145,7 @@ THEOREM base2 == (fib[1] = 1)
 
 THEOREM fib_type == fib \in [Nat -> Nat]
 
-THEOREM \A x \in Nat: fib[x] > 0
+THEOREM fib_positive == \A x \in Nat: fib[x] > 0
   <1> DEFINE P(n) == fib[n] > 0
   <1>1. \A n \in Nat : (\A m \in 0..(n-1) : P(m)) => P(n)
     <2> TAKE n \in Nat
@@ -157,9 +157,10 @@ THEOREM \A x \in Nat: fib[x] > 0
        <3>3. fib[n] = fib[n-1] + fib[n-2] BY <2>2, fib_def
        <3> QED BY fib_type, <3>1, <3>2, <3>3
     <2> QED BY <2>1, <2>2
-  <1>2. \A n \in Nat: P(n)
-    <2> HIDE DEF P \* necessary for unclear reasons
-    <2> QED BY <1>1, GeneralNatInduction
-  <1> QED BY <1>2
+  \* ASSUME...PROVE is generally easier for TLAPS than implication or quantification
+  <1>2. ASSUME NEW n \in Nat PROVE (\A m \in 0..(n-1) : P(m)) => P(n) BY <1>1
+  <1> HIDE DEF P \* necessary for unclear reasons
+  <1>3. \A n \in Nat: P(n) BY <1>2, GeneralNatInduction
+  <1> QED BY <1>3 DEF P
 
 =======================
