@@ -76,34 +76,66 @@ THEOREM assume_is_dumb == TRUE
       BY <1>1
   <1> QED OBVIOUS
 
+\* Silly helper definition.  Used in "fib_def" below.
+Mention(op(_, _)) == TRUE
+
 \* While TLAPS claims to support recursive functions, they can be really awkward!
 \* This seemingly-obvious fact is quite difficult to prove.
 THEOREM fib_def == \A n \in Nat: fib[n] = (IF n <= 1 THEN 1 ELSE fib[n-1] + fib[n-2])
-  \* These intermediate definitions enable the backends to instantiate the higher-order
-  \* theorem "RecursiveFcnOfNat" used below
+  \* First, we define an "unfixed" version of the function.  This is a non-recursive
+  \* definition such that `fib = [x \in Nat |-> fib_unfixed(fib, x)]`.
   <1> DEFINE fib_unfixed(f, n) == IF n <= 1 THEN 1 ELSE f[n-1] + f[n-2]
-  <1> DEFINE fib_unrolled[n \in Nat] == fib_unfixed(fib_unrolled, n)
-  \* Our auxiliary definition is equal to the official one
-  <1>1. fib = fib_unrolled BY DEF fib
-  \* We need this lemma for "RecursiveFcnOfNat".  It says that the nth Fibonacci number
-  \* only depends on smaller indexes.  This is to say that the Fibonacci function is
-  \* "well-founded".
-  <1>2. ASSUME NEW n \in Nat, NEW g, NEW h,
-                \A i \in 0..(n-1) : g[i] = h[i]
-         PROVE  fib_unfixed(g, n) = fib_unfixed(h, n)
-         BY <1>2
-  \* Using "RecursiveFcnOfNat" and our "well-founded" hypothesis, we can prove that it
-  \* is legal to unfold the Fibonacci function once without changing the meaning.
-  <1>3. fib_unrolled = [n \in Nat |-> fib_unfixed(fib_unrolled, n)]
-    <2> HIDE DEF fib_unfixed \* necessary for unclear reasons
-    <2> QED BY <1>2, RecursiveFcnOfNat
-  \* Now, we can prove a relationship between the official definition and the definition
-  \* we proved unfoldable in step <1>3.
-  <1>4. \A n \in Nat: fib[n] = fib_unfixed(fib, n)
-    <2> TAKE n \in Nat
-    <2> QED BY <1>1, <1>3
-  \* Finally, that relationship allows us to prove the overall goal.
-  <1> QED BY <1>4
+
+  \* In fact, if we can prove the relationship between fib and fib_unfixed, the
+  \* backends have no problem establishing our goal.  This relationship enables the
+  \* backends to "unfold" fib for evalution by rewriting
+  \*   fib[n] = fib_unfixed(fib, n)
+  \*          = IF n <= 1 THEN 1 ELSE fib[n-1] + fib[n-2]
+  <1> SUFFICES fib = [n \in Nat |-> fib_unfixed(fib, n)] OBVIOUS
+
+  \* Our goal is to apply the builtin theorem "RecursiveFcnOfNat" which states:
+  \*
+  \*   ASSUME NEW Def(_,_),
+  \*          ASSUME NEW n \in Nat, NEW g, NEW h,
+  \*                 \A i \in 0..(n-1) : g[i] = h[i]
+  \*          PROVE  Def(g, n) = Def(h, n)
+  \*   PROVE  LET f[n \in Nat] == Def(f, n)
+  \*          IN  f = [n \in Nat |-> Def(f, n)]
+  \*
+  \* Notice that, after let-inlining, our goal is close to the conclusion of the
+  \* RecursiveFcnOfNat theorem with "Def" replaced by "fib_unfixed".  So, we need
+  \* to prove the "well-foundedness" hypothesis required by RecursiveFcnOfNat:
+  <1>a. ASSUME
+          NEW i \in Nat,
+          NEW g,
+          NEW h,
+          \A j \in 0..(i-1) : g[j] = h[j]
+        PROVE
+          fib_unfixed(g, i) = fib_unfixed(h, i)
+        BY <1>a
+
+  \* Defining fib_fixed makes our goal *exactly* the conclusion of RecursiveFcnOfNat.
+  \* This step feels a little silly---the backends have no trouble showing that
+  \* "fib_fixed = fib"---but without this step the backends will not correctly
+  \* instantiate RecursiveFcnOfNat.
+  <1> DEFINE fib_fixed[i \in Nat] == fib_unfixed(fib_fixed, i)
+  <1> SUFFICES fib_fixed = [n \in Nat |-> fib_unfixed(fib_fixed, n)] BY DEF fib
+
+  \* Unfortunately, we now need to do a lot of footwork to convince the backends
+  \* to apply RecursiveFcnOfNat correctly.  Here are the key points:
+  \*   - The statement of RecursiveFcnOfNat uses a binary operator "Def"
+  \*   - We want "fib_unfixed" to be used in place of "Def"
+  \*   - We need to hide the definition of "fib_unfixed" to have any hope of
+  \*     instantiating RecursiveFcnOfNat with fib_unfixed in place of Def.
+  \*   - In fact, we need to mention fib_unfixed as an argument to an operator
+  \*     to convince the backends that they can use it to substitute a free
+  \*     symbol in another theorem (i.e. Def in RecursiveFcnOfNat).  From what
+  \*     I have read in the source code, the standard library proofs do this by
+  \*     accident a lot of the time.  This tricky requirement can be met using
+  \*     the no-op "Mention" operator defined above.
+  <1> HIDE DEF fib_unfixed
+  <1>b. ASSUME Mention(fib_unfixed) PROVE fib_fixed = [i \in Nat |-> fib_unfixed(fib_fixed, i)] BY <1>a, <1>b, RecursiveFcnOfNat
+  <1> QED BY <1>b DEF Mention
 
 THEOREM base1 == (fib[0] = 1)
   BY fib_def
