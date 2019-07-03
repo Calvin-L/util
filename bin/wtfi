@@ -4,6 +4,8 @@ import argparse
 import subprocess
 import re
 
+LINE_DISPLAY_LENGTH = 60
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Where the fuck is...? (Search your current directory for "
@@ -35,17 +37,26 @@ def run(args):
         with open(fname, "rb") as handle:
             for line in handle:
                 try:
-                    line = line.decode("UTF-8")
-                    if r.search(line):
+                    line = line.decode("UTF-8").strip()
+                    m = r.search(line)
+                    if m:
                         match = True
-                        matches.append((lno, line))
+                        matches.append((lno, m.start(), line))
                     lno += 1
                 except UnicodeDecodeError:
                     break
         if match:
             print(fname)
-            for n, l in matches:
-                print(" -> line {}: {}".format(n, l.strip()))
+            for n, st, l in matches:
+                l_len = len(l)
+                if l_len > LINE_DISPLAY_LENGTH:
+                    start_offset = max(0, min(st - LINE_DISPLAY_LENGTH//2, l_len - LINE_DISPLAY_LENGTH))
+                    l = l[start_offset : start_offset+LINE_DISPLAY_LENGTH]
+                    if start_offset > 0:
+                        l = "..." + l
+                    if start_offset + LINE_DISPLAY_LENGTH < l_len:
+                        l += "..."
+                print(" -> line {}: {}".format(n, l))
 
 if __name__ == "__main__":
     run(parse_args())
