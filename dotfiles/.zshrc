@@ -4,6 +4,7 @@ export PATH='/Users/loncaric/.opam/default/bin:/Users/loncaric/bin:/Users/loncar
 export CLICOLOR=yes # colors for ls
 
 export EDITOR="subl -nw"
+export GPG_TTY="$(tty)"
 
 export JAVA_HOME="$(/usr/libexec/java_home)"
 

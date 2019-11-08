@@ -31,6 +31,7 @@ export PATH="$HOME/bin:$PATH"
 export EDITOR="subl -nw"
 export HOMEBREW_EDITOR="$EDITOR"
 export MAKEFLAGS="-j4"
+export GPG_TTY="$(tty)"
 
 # Python setup
 export PYTHONUNBUFFERED=unbuffered
