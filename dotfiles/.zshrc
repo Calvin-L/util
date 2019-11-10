@@ -8,6 +8,10 @@ export GPG_TTY="$(tty)"
 
 export JAVA_HOME="$(/usr/libexec/java_home)"
 
+# Ignore duplicate history items (e.g. if you issue "make && ./run.sh" over and over it is coalesced into one entry)
+# See also: https://www.bartbusschots.ie/s/2019/06/17/moving-my-bashrc-to-zshrc/
+setopt HIST_IGNORE_DUPS
+
 function __gitinfo() {
     if [ -d .git ] || git rev-parse --git-dir >/dev/null 2>&1
     then
