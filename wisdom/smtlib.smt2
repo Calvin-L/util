@@ -78,3 +78,24 @@
   (check-sat)
   (get-model)
 (pop)
+
+; uninterp sorts
+(declare-sort T)
+(declare-sort U 1)
+
+; Inductive datatypes
+(declare-datatypes ((Maybe 1) (Enum 0)) (
+  (par (T) (Nothing (Just (value T))))
+  (EnumA EnumB)
+))
+
+; patterns
+(assert
+   (forall ((d1 Value)(d2 Value)(d3 Value)(d4 Value))
+      (! (=>
+         (and (= (ENC d1 d2) (ENC d3 d4)))
+         (and (= d1 d3) (= d2 d4))
+      )
+      :pattern ((ENC d1 d2) (ENC d3 d4)))
+   )
+)
