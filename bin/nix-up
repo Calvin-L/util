@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Update your Nix environment with new versions of packages.
+
+set -e
+nix-channel --update
+nix-env --upgrade "$@" # --leq
+# nix-collect-garbage
+# nix-store -v --optimise

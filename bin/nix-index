@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Creates ~/nix-package-list.txt with a list of all available Nix packages.
+
+OUT="$HOME/nix-package-list.txt"
+echo "Creating $OUT..."
+exec nix-env --query --available --attr-path >"$OUT"
