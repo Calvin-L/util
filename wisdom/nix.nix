@@ -81,3 +81,22 @@ let cdrtools = callPackage ./nix/cdrtools.nix {
 stdenv.mkDerivation rec {
   # ...
 }
+
+# -----------------------------------------------------------------------------
+# ~/.config/nixpkgs/config.nix
+# This file gives you an enormous amount of power over the nixpkgs repository.
+# In this example I disabled the libuv tests.  The change replaces libuv in the
+# entire build tree, so everything that depends on libuv gets the updated
+# version!
+
+{
+
+  # allowUnsupportedSystem = true;
+
+  packageOverrides = pkgs: rec {
+    # Disable libuv tests because they make actual network calls and can fail
+    # spuriously if your network is different from the developers' setups.
+    libuv = pkgs.libuv.overrideAttrs (oldAttrs: { doCheck=false; });
+  };
+
+}
