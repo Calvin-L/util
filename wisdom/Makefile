@@ -30,7 +30,7 @@ SHELL = /bin/bash
 # NOTE: unfortunately, this also has the effect of marking every file as an
 # "intermediate" file, which can have unintended effects.  In particular, Make
 # does not rebuild files that have missing inputs if those inputs are
-# "intermeidate" files.  However, if a file needs to be rebuilt for another
+# "intermediate" files.  However, if a file needs to be rebuilt for another
 # reason, then its missing inputs will be rebuilt first.
 # See: https://www.gnu.org/software/make/manual/make.html#Chained-Rules
 # If at all possible, use "static" pattern rules instead of .SECONDARY to
