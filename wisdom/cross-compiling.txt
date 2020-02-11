@@ -1,0 +1,97 @@
+"Cross-compiling" means compiling a program on one machine that is intended to
+run on a different machine.  Since compilers are essentially functions from
+a source language to machine code, it is easy to imagine running a compiler on
+X86 that outputs Arm7 machine code.  Unfortunately, doing cross-compiling is
+much more complicated than that in practice!
+
+
+-------------------------------------------------------------------------------
+                                TERMINOLOGY
+
+You'll see the words "build", "host", and "target" a lot.  Build and host are
+the most important:
+
+    project     +---------------+
+    source   -> | build process | -> binary
+     code       +---------------+
+                 (runs on BUILD   (executable on
+                    machine)       HOST machine)
+
+If the thing you are building is a compiler, then target is relevant:
+
+    project     +---------------+
+    source   -> | build process | -> binary A
+     code       +---------------+
+                 (runs on BUILD   (executable on
+                    machine)       HOST machine)
+
+    other      +----------+
+    source  -> | binary A | -> binary B
+     code      +----------+
+             (runs on HOST   (executable on
+                machine)     TARGET machine)
+
+If you are building a compiler:
+
+    ("build" is "your system")
+
+    build/host/target all same -->
+        you are building a native compiler for your system
+    just target different -->
+        you are building a cross compiler that will run on your system
+    host and target different -->
+        you are building a native compiler for a different system
+    just host different -->
+        you are building a "crossback compiler" that will run on a different
+        system but compile code for YOUR system
+    all different -->
+        you are building a cross compiler that will run on a different system
+        and compile code for yet another system
+        (sometimes called a "canadian" build)
+
+Source: https://gcc.gnu.org/onlinedocs/gccint/Configure-Terms.html
+
+
+-------------------------------------------------------------------------------
+                              WHAT YOU'LL NEED
+
+This is not a tutorial, but it should put any online tutorials in perspective.
+
+To compile C/C++ code:
+
+
+                [compiler]                        [linker]
+    sources  ---+------------>  object files  ---+----------> executables
+    headers  --/                libraries     --/
+
+So you need:
+
+    - source code
+    - headers for the target machine
+    - libraries for the target machine
+    - a compiler that runs on the build machine and produces objects for the
+      target machine
+    - a linker that runs on the build machine and produces objects for the
+      target machine
+
+Additionally, many projects require all the junk in GNU Binutils, so you might
+as well have all those things as well.
+
+
+-------------------------------------------------------------------------------
+                            WHY IS THIS SO HARD
+
+Here are some potential sticking points:
+
+ - A given compiler/linker toolchain is (usually) only capable of producing
+   one kind of machine code.  To target a different one you will need a whole
+   new compiler and linker.
+
+ - Some compilers use hard-coded paths to /usr/local and other standard
+   locations.  The other machine's headers probably going to be somewhere else,
+   and you don't want to accidentally pick up your machine's headers.
+
+ - Your machine will need copies of the other machine's libraries.  However,
+   they will probably be at a different absolute path on your machine than on
+   the target machine.  Therefore, your linker needs to know how to find those
+   libraries but output machine code that references them somewhere else.
