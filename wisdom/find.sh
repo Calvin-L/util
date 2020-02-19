@@ -41,3 +41,22 @@ find . -iname '*.java' -exec fgrep -q foo {} \; -print
 #    rounding and other shenanigans and it's harder to tell what you're really
 #    going to find.
 find . -type f -mtime -7d
+
+# Excluding subtrees, the quick-and-dirty way:
+find . -not -path '*/.git/*'
+
+# Find does not promise to be terribly smart about the "-path" test.  In the
+# line above, it will actually descend into the ".git" subtree and explore
+# everything there.  For big find jobs you can use "-prune" to prevent this
+# behavior.
+# Notes:
+#  - "-prune" is a test that always evaluates to true and silences the default
+#    "-print" behavior.
+#  - If "-prune" is applied to a directory, find will not explore the subtree
+#    below the directory.
+#  - To use "-prune" effectively, use it with "-o" for "OR" along with the test
+#    you actually want to perform.
+find . \( -type d -name '.git' -prune \) -o -print
+
+# To see what was pruned:
+find . -type d -name '.git' -prune -print
