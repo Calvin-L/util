@@ -155,7 +155,7 @@ THEOREM fib_positive == \A x \in Nat: fib[x] > 0
        <3>1. fib[n-1] > 0 BY <2>0, <2>2
        <3>2. fib[n-2] > 0 BY <2>0, <2>2
        <3>3. fib[n] = fib[n-1] + fib[n-2] BY <2>2, fib_def
-       <3> QED BY fib_type, <3>1, <3>2, <3>3
+       <3> QED BY fib_type, <2>2, <3>1, <3>2, <3>3
     <2> QED BY <2>1, <2>2
   \* ASSUME...PROVE is generally easier for TLAPS than implication or quantification
   <1>2. ASSUME NEW n \in Nat PROVE (\A m \in 0..(n-1) : P(m)) => P(n) BY <1>1
