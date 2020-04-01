@@ -42,6 +42,8 @@ def run(args):
         if not fname:
             break
         fname = fname.decode("utf-8")
+        while fname.startswith("./"):
+            fname = fname[2:]
         if exclude and exclude.search(fname):
             continue
         match = False
