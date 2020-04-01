@@ -14,6 +14,10 @@ def parse_args():
         "Exclude paths matching this pattern.  You can provide this option " +
         "multiple times.  If you do, then paths that match ANY exclude pattern "
         "will be excluded.")
+    parser.add_argument("--in", action="append", metavar="PATH", help=
+        "Search the givenpath.  If no --in options are given, this tool "
+        "searches your current directory.  You can provide this option "
+        "multiple times.  The path can be a file or a directory.")
     parser.add_argument("regex")
     return parser.parse_args()
 
@@ -22,8 +26,14 @@ def run(args):
     if args.exclude:
         exclude = "|".join("(?:{})".format(x) for x in args.exclude)
         exclude = re.compile(exclude, flags=re.IGNORECASE)
+
+    if getattr(args, "in"):
+        search_roots = getattr(args, "in")
+    else:
+        search_roots = ["."]
+
     r = re.compile(args.regex, flags=re.IGNORECASE)
-    for fname in subprocess.run(["find", ".", "-type", "f", "-print0"], stdout=subprocess.PIPE).stdout.split(b"\0"):
+    for fname in subprocess.run(["find"] + search_roots + ["-type", "f", "-print0"], stdout=subprocess.PIPE).stdout.split(b"\0"):
         if not fname:
             break
         fname = fname.decode("utf-8")
