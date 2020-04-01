@@ -7,11 +7,11 @@ import re
 LINE_DISPLAY_LENGTH = 60
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Where the fuck is...? (Search your current directory for "
-            + "a regex in file contents or names).")
+    parser = argparse.ArgumentParser(description=
+            "Where the fuck is...? (Search your current directory for a regex "
+            "in file contents or names).")
     parser.add_argument("-x", "--exclude", action="append", metavar="REGEX", help=
-        "Exclude paths matching this pattern.  You can provide this option " +
+        "Exclude paths matching this pattern.  You can provide this option "
         "multiple times.  If you do, then paths that match ANY exclude pattern "
         "will be excluded.")
     parser.add_argument("--in", action="append", metavar="PATH", help=
