@@ -37,11 +37,11 @@ def run(args):
         with open(fname, "rb") as handle:
             for line in handle:
                 try:
-                    line = line.decode("UTF-8").strip()
+                    line = line.decode("UTF-8")
                     m = r.search(line)
                     if m:
                         match = True
-                        matches.append((lno, m.start(), line))
+                        matches.append((lno, m.start(), line.strip()))
                     lno += 1
                 except UnicodeDecodeError:
                     break
