@@ -28,7 +28,12 @@ def run(args):
         exclude = re.compile(exclude, flags=re.IGNORECASE)
 
     if getattr(args, "in"):
-        search_roots = getattr(args, "in")
+        search_roots = []
+        for path in getattr(args, "in"):
+            if path.startswith("-"):
+                # prevent find from interpreting it as an option
+                path = "./" + path
+            search_roots.append(path)
     else:
         search_roots = ["."]
 
