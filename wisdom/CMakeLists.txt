@@ -16,6 +16,17 @@ project(ExampleCMakeProject
 # not 7.13"), but I believe you can write manual checks for that kind of thing.
 find_package(CURL 7.0 REQUIRED)
 
+# Check for things you plan to use that might or might not be present in the
+# standard library.
+# See:
+#   https://cmake.org/cmake/help/v3.9/module/CheckSymbolExists.html
+#   https://cmake.org/cmake/help/v3.9/module/CheckIncludeFile.html
+#   https://cmake.org/cmake/help/v3.9/module/CheckIncludeFileCXX.html
+include(CheckSymbolExists)
+check_symbol_exists(F_FULLFSYNC fcntl.h HAVE_F_FULLFSYNC)
+include(CheckIncludeFileCXX)
+check_include_file_cxx(atomic HAVE_ATOMIC)
+
 # -----------------------------------------------------------------------------
 # Shared library
 
