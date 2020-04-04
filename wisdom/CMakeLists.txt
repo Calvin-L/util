@@ -17,7 +17,8 @@ project(ExampleCMakeProject
 find_package(CURL 7.0 REQUIRED)
 
 # Check for things you plan to use that might or might not be present in the
-# standard library.
+# standard library.  Note that these checks won't fail the build if they fail;
+# you need to check the results yourself.
 # See:
 #   https://cmake.org/cmake/help/v3.9/module/CheckSymbolExists.html
 #   https://cmake.org/cmake/help/v3.9/module/CheckIncludeFile.html
