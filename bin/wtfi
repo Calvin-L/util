@@ -15,7 +15,7 @@ def parse_args():
         "multiple times.  If you do, then paths that match ANY exclude pattern "
         "will be excluded.")
     parser.add_argument("--in", action="append", metavar="PATH", help=
-        "Search the givenpath.  If no --in options are given, this tool "
+        "Search the given path.  If no --in options are given, this tool "
         "searches your current directory.  You can provide this option "
         "multiple times.  The path can be a file or a directory.")
     parser.add_argument("regex")
