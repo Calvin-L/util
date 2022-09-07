@@ -24,10 +24,7 @@ export CLICOLOR=yes # colors for ls
 export LS_COLORS='rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32'; # colors for tree, generated using dircolors on linux
 export PROMPT_COMMAND="__prompt;$PROMPT_COMMAND"
 export PS1='\[\e[00;36m\]\w\[\e[00;33m\]$(__gitinfo) \[\e[${__EXIT_STATUS_COLOR}\]\$ \[\e[00m\]'
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin"
-export PATH="$HOME/.cabal/bin:$PATH"
-export PATH="$PATH:/usr/local/sbin"
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin"
 export EDITOR="subl -nw"
 export HOMEBREW_EDITOR="$EDITOR"
 export MAKEFLAGS="-j4"

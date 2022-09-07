@@ -1,5 +1,4 @@
-
-export PATH='/Users/loncaric/.opam/default/bin:/Users/loncaric/bin:/Users/loncaric/.cabal/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin:/usr/local/sbin'
+export PATH="$HOME/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin"
 
 export CLICOLOR=yes # colors for ls
 
