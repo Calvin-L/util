@@ -143,7 +143,18 @@ THEOREM base1 == (fib[0] = 1)
 THEOREM base2 == (fib[1] = 1)
   BY fib_def
 
+LEMMA func_type == \A f, D, R: (DOMAIN f = D /\ \A x \in D: f[x] \in R) => f \in [D -> R]
+  <1> TAKE f
+  <1> TAKE D
+  <1> TAKE R
+  <1>1. SUFFICES ASSUME DOMAIN f = D, \A x \in D: f[x] \in R PROVE f \in [D -> R]
+        OBVIOUS
+  <1> QED
+
 THEOREM fib_type == fib \in [Nat -> Nat]
+  <1>1. DOMAIN fib = Nat
+  <1>2. \A n \in Nat: fib[n] \in Nat
+  <1> QED BY func_type, <1>1, <1>2
 
 THEOREM fib_positive == \A x \in Nat: fib[x] > 0
   <1> DEFINE P(n) == fib[n] > 0
