@@ -1,8 +1,8 @@
 # sync the contents of two folders
 rsync [flags] folderA/ folderB/
 
-# resume-able sync
-rsync -avz --progress --append src dst
+# resume-able sync with other niceties
+rsync -avzH --progress --append src/ dst/
 
 # resume a failed curl download
 curl -O URL # suppose this fails
