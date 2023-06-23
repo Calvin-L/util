@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+
+"""
+Sample behavior:
+
+    /tmp/weirdness $ ls -l
+    total 0
+    lrwxr-xr-x  1 cloncari  wheel  1 Mar 31 14:06 a -> b
+    lrwxr-xr-x  1 cloncari  wheel  1 Mar 31 14:06 b -> a
+    lrwxr-xr-x  1 cloncari  wheel  3 Mar 31 14:06 c -> c/d
+    lrwxr-xr-x  1 cloncari  wheel  3 Mar 31 14:08 d -> e/f
+    lrwxr-xr-x  1 cloncari  wheel  1 Mar 31 14:08 e -> d
+    -rw-r--r--  1 cloncari  wheel  0 Mar 31 14:12 f
+    lrwxr-xr-x  1 cloncari  wheel  1 Mar 31 14:09 g -> f
+    lrwxr-xr-x  1 cloncari  wheel  1 Mar 31 14:10 h -> g
+    lrwxr-xr-x  1 cloncari  wheel  2 Mar 31 14:12 i -> ..
+    lrwxr-xr-x  1 cloncari  wheel  1 Mar 31 14:32 j -> j
+
+    /tmp/weirdness $ find-cyclic-symbolic-links -v .
+    /private/tmp/weirdness/i ==> /private/tmp
+    /private/tmp/weirdness/g ==> /private/tmp/weirdness/f
+    /private/tmp/weirdness/a ==> /private/tmp/weirdness/b
+    /private/tmp/weirdness/h ==> /private/tmp/weirdness/g
+    /private/tmp/weirdness/j ==> /private/tmp/weirdness/j
+    /private/tmp/weirdness/c ==> /private/tmp/weirdness/c/d
+    /private/tmp/weirdness/d ==> /private/tmp/weirdness/e/f
+    /private/tmp/weirdness/e ==> /private/tmp/weirdness/d
+    /private/tmp/weirdness/b ==> /private/tmp/weirdness/a
+
+    ****** TYPE A CYCLES ******
+      These cycles cause problems for applications trying to walk the
+      directory tree.  They cause the directory tree to appear
+      infinitely deep.
+
+    /private/tmp/weirdness/a ==> /private/tmp/weirdness/b; /private/tmp/weirdness/b ==> /private/tmp/weirdness/a
+    /private/tmp/weirdness/b ==> /private/tmp/weirdness/a; /private/tmp/weirdness/a ==> /private/tmp/weirdness/b
+    /private/tmp/weirdness/i ==> /private/tmp
+    /private/tmp/weirdness/j ==> /private/tmp/weirdness/j
+
+    ****** TYPE B CYCLES ******
+      These cycles cause problems for applications trying to resolve
+      symbolic links.  They cause the recursively-resolved path of a
+      symbolic link to be infinitely long.
+
+    /private/tmp/weirdness/a ==> /private/tmp/weirdness/b; /private/tmp/weirdness/b ==> /private/tmp/weirdness/a
+    /private/tmp/weirdness/b ==> /private/tmp/weirdness/a; /private/tmp/weirdness/a ==> /private/tmp/weirdness/b
+    /private/tmp/weirdness/c ==> /private/tmp/weirdness/c/d
+    /private/tmp/weirdness/d ==> /private/tmp/weirdness/e/f; /private/tmp/weirdness/e ==> /private/tmp/weirdness/d
+    /private/tmp/weirdness/e ==> /private/tmp/weirdness/d; /private/tmp/weirdness/d ==> /private/tmp/weirdness/e/f
+    /private/tmp/weirdness/j ==> /private/tmp/weirdness/j
+"""
+
+import os
+import argparse
+import errno
+import itertools
+import shlex
+
+def make_graph(nodes, is_edge):
+    nodes = sorted(nodes)
+    g = {}
+    for n in nodes:
+        g[n] = []
+        for m in nodes:
+            if is_edge(n, m):
+                g[n].append(m)
+    return g
+
+def dfs(g, start, end):
+    for next in g[start]:
+        if next == end:
+            return [start, end]
+    for next in g[start]:
+        path = dfs(g, next, end)
+        if path is not None:
+            return [start] + path
+    return None
+
+def find_cycles(g):
+    for n in g:
+        path = dfs(g, n, n)
+        if path is not None:
+            yield path
+
+def format_cycle(cycle, format_node, g):
+    return "; ".join(format_node(n) for n in cycle[:-1])
+
+def find_and_print_cycles(g, format_node):
+    found = False
+    for cycle in find_cycles(g):
+        print(format_cycle(cycle, format_node, g))
+        found = True
+    if not found:
+        print("NONE FOUND")
+
+def run():
+    p = argparse.ArgumentParser(description="Find cycles among symbolic links")
+    p.add_argument("dir", help="The folder to search")
+    p.add_argument("-v", "--verbose", action="store_true", help="Print symbolic links as they are discovered")
+
+    args = p.parse_args()
+    root_dir = args.dir
+    verbose = args.verbose
+
+    # Maps absolute path of link to absolute path of its target.  The target
+    # may contain symbolic links along its path, and the target may not even
+    # exist.
+    symlinks = {}
+
+    for root, dirs, files, dir_fd in os.fwalk(root_dir):
+        for f in itertools.chain(dirs, files):
+
+            # Optimistic strategy: don't bother trying to figure out if the
+            # file is a symbolic link first.  Just try to resolve its target,
+            # and quietly continue if the error reports that this wasn't a
+            # symbolic link.
+            #
+            # This approach is safer (fewer interleavings to consider if the
+            # filesystem is being modified concurrently) and faster (fewer
+            # system calls) than checking if the file is a symbolic link first.
+            try:
+                target = os.readlink(f, dir_fd=dir_fd)
+            except OSError as exn:
+                if exn.errno == errno.EINVAL:
+                    # From `man 2 readlink`: The named file is not a symbolic link.
+                    continue
+                else:
+                    raise
+
+            fpath = os.path.abspath(os.path.join(root, f))
+            target = os.path.abspath(os.path.join(root, target))
+            if verbose:
+                print("{} ==> {}".format(fpath, target))
+            symlinks[fpath] = target
+
+    def format_node(n):
+        return "{} ==> {}".format(shlex.quote(n), shlex.quote(symlinks[n]))
+
+    # `symlinks` describes a directed graph where the nodes are the absolute
+    # paths of symbolic links.  There is an edge from link A to link B if A
+    # points to a prefix of B.
+    print()
+    print("****** TYPE A CYCLES ******")
+    print("  These cycles cause problems for applications trying to walk the")
+    print("  directory tree.  They cause the directory tree to appear")
+    print("  infinitely deep.")
+    print()
+    g = make_graph(symlinks.keys(), lambda src, dst: os.path.commonpath([symlinks[src], dst]) == symlinks[src])
+    find_and_print_cycles(g, format_node=format_node)
+
+    # `symlinks` describes a directed graph where the nodes are the absolute
+    # paths of symbolic links.  There is an edge from link A to link B if A
+    # points to a suffix of B---i.e. fully resolving A requires fully resolving
+    # B.
+    print()
+    print("****** TYPE B CYCLES ******")
+    print("  These cycles cause problems for applications trying to resolve")
+    print("  symbolic links.  They cause the recursively-resolved path of a")
+    print("  symbolic link to be infinitely long.")
+    print()
+    g = make_graph(symlinks.keys(), lambda src, dst: os.path.commonpath([symlinks[src], dst]) == dst)
+    find_and_print_cycles(g, format_node=format_node)
+    print()
+
+if __name__ == "__main__":
+    run()
