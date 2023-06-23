@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# "Synchronize" your Nix environment with the packages listed in ~/env.nix.
+# See: https://ianthehenry.com/posts/how-to-learn-nix/declarative-user-environment/
+#
+# Example env.nix:
+#  > with import <nixpkgs> {};
+#  > [
+#  >     nix
+#  >     cacert
+#  >     (python3.withPackages (p: [p.pyyaml]))
+#  > ]
+
+# Reminders:
+#   -i   install
+#   -r   remove all [others]
+#   -f   gather derivations from file
+exec nix-env -irf "$HOME/env.nix"
