@@ -17,6 +17,7 @@
 #    | Total-time [6]         | yes      | no [7]              |
 #    | Self-time [6]          | yes      | no [7]              |
 #    | Callee-breakdown [6]   | no       | yes [7]             |
+#    | Search [8]             | no       | no                  |
 #
 # NOTES:
 #    [1]: I want to be able to restrict my view to a particular method; I don't
@@ -59,3 +60,6 @@
 #         is not defined anywhere, and I have no reason to think it has
 #         anything to do with time.  Similarly, while it has a callee
 #         breakdown, the percentages are in terms of samples, not time.
+#    [8]: This one drives me up the wall.  I want to be able to Cmd+F for a
+#         name to find relevant heavy stack traces.  How is this not supported
+#         in any tool???
