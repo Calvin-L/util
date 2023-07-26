@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# See ./crontab.
+# Install as ~/cron/daily.
+
+prefix=(time nice -n20)
+
+echo "----[ Starting daily tasks at $(date) ]----"
+(
+
+    set -x
+
+    # Add commands below this line
+    # -------------------------------------------------------------------------
+    env
+    "${prefix[@]}" echo hello
+    "${prefix[@]}" echo goodbye
+    # -------------------------------------------------------------------------
+
+)
+echo "----[ Finished daily tasks at $(date) ]----"
