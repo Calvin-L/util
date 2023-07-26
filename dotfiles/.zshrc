@@ -2,7 +2,18 @@ export PATH="$HOME/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/s
 
 export CLICOLOR=yes # colors for ls
 
-export EDITOR="subl -nw"
+# Set $EDITOR to a wrapper script.
+#   - the wrapper script can make decisions about which editor to use based on
+#     the environment
+#   - the wrapper script can pass flags to the editor (some tools don't like
+#     when $EDITOR contains spaces---and in truth, it's ambiguous whether the
+#     spaces are part of the name of the executable or if they separate flags)
+#   - you can change your editor by modifying the wrapper script without
+#     restarting your shell
+if [[ -x "$HOME/bin/editor" ]]; then
+    export EDITOR="$HOME/bin/editor"
+fi
+
 export GPG_TTY="$(tty)"
 
 export JAVA_HOME="$(/usr/libexec/java_home)"
