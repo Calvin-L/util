@@ -100,3 +100,8 @@ stdenv.mkDerivation rec {
   };
 
 }
+
+# -----------------------------------------------------------------------------
+# Get the list of attributes of a set
+
+lib.attrNames python3Packages
