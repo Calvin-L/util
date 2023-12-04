@@ -7,11 +7,12 @@
 #    packages, like
 #
 #       $ cat local.nix
-#       { nixpkgs, ... }:
+#       { nixpkgs, pin, ... }:
 #       with nixpkgs;
 #       [
 #         cvs
 #         subversion
+#         (pin "coq_8.17" coq_8_17)
 #       ]
 
 let nixpkgs = import <nixpkgs> {}; in
@@ -19,12 +20,12 @@ with nixpkgs;
 
 let
 
-pin = (pkgs:
-  runCommandLocal "pins" {} (
+pin = (name: p:
+  runCommandLocal ("pinned-" + name) {} (
     ''
       mkdir -p $out/pins
-      cd $out/pins
-    '' + lib.concatStringsSep "\n" (builtins.map (a: "ln -sv '${pkgs.${a}}' '${a}'") (builtins.attrNames pkgs))
+      ln -sv '${p}' $out/'pins/${name}'
+    ''
   )
 );
 
@@ -41,9 +42,7 @@ in
 
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it
-  (pin {
-    bashInteractive = bashInteractive;
-  })
+  (pin "bashInteractive" bashInteractive)
 ]
 
-++ lib.optionals (builtins.pathExists ./local.nix) (import ./local.nix { nixpkgs=nixpkgs; })
+++ lib.optionals (builtins.pathExists ./local.nix) (import ./local.nix { nixpkgs=nixpkgs; pin=pin; })
