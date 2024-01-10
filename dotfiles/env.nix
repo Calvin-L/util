@@ -37,8 +37,14 @@ in
   # cacert
 
   # ---- Core packages
-  # (python3.withPackages (p: [p.pyyaml]))
   # nix-tree
+  (python3.withPackages (p: [p.mypy p.virtualenv]))
+  jq.bin
+  # jdk17
+  htop
+  tree
+  rlwrap
+  pv
 
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it
