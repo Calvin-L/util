@@ -8,3 +8,7 @@ nix-sync
 
 # nix-collect-garbage --delete-older-than 90d
 # nix-store -v --optimise
+
+# https://nixos.org/manual/nix/stable/installation/upgrading.html
+# Multi-user Nix users on macOS can upgrade Nix by running:
+# sudo -i sh -c 'nix-channel --update && nix-env --install --attr nixpkgs.nix && launchctl remove org.nixos.nix-daemon && launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist'
