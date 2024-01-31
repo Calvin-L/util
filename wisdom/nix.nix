@@ -102,6 +102,10 @@ stdenv.mkDerivation rec {
 }
 
 # -----------------------------------------------------------------------------
-# Get the list of attributes of a set
+# Get the list of attributes of a set, sorted alphabetically
 
-lib.attrNames python3Packages
+builtins.attrNames python3Packages
+
+builtins.map f l
+
+lib.strings.concatStringsSep "\n" [s1 s2 s3]
