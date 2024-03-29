@@ -4,4 +4,4 @@
 
 OUT="$HOME/nix-package-list.txt"
 echo "Creating $OUT..."
-nix-env --query --available --attr-path >"$OUT.tmp" && mv "$OUT.tmp" "$OUT"
+nix-env --query --available --attr-path | sort >"$OUT.tmp" && mv "$OUT.tmp" "$OUT"
