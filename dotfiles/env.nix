@@ -17,8 +17,8 @@
 
 let nixpkgs = import <nixpkgs> {}; in
 let nixjars = (import (builtins.fetchTarball {
-  url = "https://github.com/Calvin-L/nixjars/archive/adbc4e3ff414009b54b7616c00d7781f3e9cb548.tar.gz";
-  sha256 = "1jklkdky2d4y42ljd0nj5la1x6al92zm39sk9h367zrazn8140lc";
+  url = "https://github.com/Calvin-L/nixjars/archive/2b9127b809a8c0d61f00fd84ffb40567a43949f6.tar.gz";
+  sha256 = "0v9nsynnx8nybjx8jlz6xswscbcdlfmgxnm1aaif3dvlilvcn1b5";
 }) { nixpkgs=nixpkgs; }); in
 with nixpkgs;
 
