@@ -94,7 +94,7 @@ def parse_cache_control_header(s):
 info("Checking remote resource {} ---> {}".format(url, out_path))
 try:
     etag = out_etag
-    headers = { }
+    headers = {'User-Agent': 'Mozilla/5.0'}
     if out_etag is not None:
         headers["If-None-Match"] = out_etag
         info("Header If-None-Match: {}".format(out_etag))
@@ -104,7 +104,7 @@ try:
         info("Header If-Modified-Since: {}".format(t))
     with urlopen(
         Request(url,
-            headers={"If-None-Match": out_etag} if out_etag is not None else {})) as response:
+            headers=headers)) as response:
         with tempfile.NamedTemporaryFile(mode="wb", delete=False) as tmp_file:
             etag = response.getheader("ETag")
             cc   = response.getheader("Cache-Control")
