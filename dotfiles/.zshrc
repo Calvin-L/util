@@ -52,3 +52,12 @@ function backward-kill-dir() {
 }
 zle -N backward-kill-dir
 bindkey '^[^?' backward-kill-dir
+
+# Nix
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+
+  # Declarative channel management; see https://checkoway.net/musings/nix/
+  export NIX_PATH="$HOME/.nix-channels"
+fi
+# End Nix

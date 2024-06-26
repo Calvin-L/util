@@ -16,10 +16,7 @@
 #       ]
 
 let nixpkgs = import <nixpkgs> {}; in
-let nixjars = (import (builtins.fetchTarball {
-  url = "https://github.com/Calvin-L/nixjars/archive/65e363fefa471d7dac0f8523f132ae0c56203936.tar.gz";
-  sha256 = "00mi29a1r8jk1w3l03m11xifii0bb3vkvbjcs65vii2k6bxjnlsz";
-}) { nixpkgs=nixpkgs; }); in
+let nixjars = (import <nixjars> { inherit nixpkgs; }); in
 with nixpkgs;
 
 let
