@@ -17,6 +17,7 @@
 
 let nixpkgs = import <nixpkgs> {}; in
 let nixjars = (import <nixjars> { inherit nixpkgs; }); in
+let calvin = (import <calvin> { inherit nixpkgs nixjars; }); in
 with nixpkgs;
 
 let
@@ -50,10 +51,12 @@ in
   cmake
   watch
   nixjars.tlatools
+  calvin.tlaps
+  calvin.many-smt
 
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it
   (pin "bashInteractive" bashInteractive)
 ]
 
-++ lib.optionals (builtins.pathExists ./local.nix) (import ./local.nix { nixpkgs=nixpkgs; nixjars=nixjars; pin=pin; })
+++ lib.optionals (builtins.pathExists ./local.nix) (import ./local.nix { nixpkgs=nixpkgs; nixjars=nixjars; calvin=calvin; pin=pin; })
