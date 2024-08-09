@@ -50,7 +50,7 @@ in
   pv
   cmake
   watch
-  nixjars.tlatools
+  calvin.tlatools-complete
   calvin.tlaps
   calvin.many-smt
 
