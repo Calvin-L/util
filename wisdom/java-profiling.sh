@@ -1,23 +1,43 @@
+# Collect a JFR trace with async-profiler (can be analyzed in JDK Mission
+# Control or IntelliJ):
+
+# 1. start your process
+# 2. get its PID
+# 3. collect trace:
+async-profiler -e cpu,alloc,lock -d 60 -f out.jfr 'PID'
+# 4. open 'out.jfr' in your favorite tool
+
+# Available events (-e flag):
+#  > Basic events:
+#  >   cpu
+#  >   alloc
+#  >   lock
+#  >   wall
+#  >   itimer
+#  > Java method calls:
+#  >   pack.age.ClassName.methodName
+
 # Java has some absolutely incredible industrial-strength tools for COLLECTING
 # statistics about running processes:
 #
 #   - Java Flight Recorder (JFR)
 #   - VisualVM
+#   - async-profiler
 #
 # ... but the tools for EXPLORING and INTERPRETING those traces are garbage.
 # Or at least, I haven't found one I like yet.
 #
-#    | FEATURES THAT          |          |                     |
-#    | CALVIN WANTS           | VISUALVM | JDK MISSION CONTROL |
-#    -----------------------------------------------------------
-#    | Focus [1]              | no       | yes [2]             |
-#    | Ignore [3]             | no       | no                  |
-#    | Blame-caller [4]       | no       | no                  |
-#    | Collapse-recursion [5] | no       | no                  |
-#    | Total-time [6]         | yes      | no [7]              |
-#    | Self-time [6]          | yes      | no [7]              |
-#    | Callee-breakdown [6]   | no       | yes [7]             |
-#    | Search [8]             | no       | no                  |
+#    | FEATURES THAT          |          |                     |          |
+#    | CALVIN WANTS           | VISUALVM | JDK MISSION CONTROL | INTELLIJ |
+#    ----------------------------------------------------------------------
+#    | Focus [1]              | no       | yes [2]             | yes      |
+#    | Ignore [3]             | no       | no                  | no       |
+#    | Blame-caller [4]       | no       | no                  | no       |
+#    | Collapse-recursion [5] | no       | no                  | no       |
+#    | Total-time [6]         | yes      | no [7]              | yes      |
+#    | Self-time [6]          | yes      | no [7]              | no       |
+#    | Callee-breakdown [6]   | no       | yes [7]             | yes      |
+#    | Search [8]             | no       | no                  | yes      |
 #
 # NOTES:
 #    [1]: I want to be able to restrict my view to a particular method; I don't
