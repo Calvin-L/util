@@ -81,9 +81,7 @@ Mention(op(_, _)) == TRUE
 
 \* While TLAPS claims to support recursive functions, they can be really awkward!
 \* This seemingly-obvious fact is quite difficult to prove.
-THEOREM fib_def == \A n \in Nat: fib[n] = (IF n <= 1 THEN 1 ELSE fib[n-1] + fib[n-2])
-  \* First, we define an "unfixed" version of the function.  This is a non-recursive
-  \* definition such that `fib = [x \in Nat |-> fib_unfixed(fib, x)]`.
+THEOREM fib_def == fib = [n \in Nat |-> IF n <= 1 THEN 1 ELSE fib[n-1] + fib[n-2]]
   <1> DEFINE fib_unfixed(f, n) == IF n <= 1 THEN 1 ELSE f[n-1] + f[n-2]
 
   \* In fact, if we can prove the relationship between fib and fib_unfixed, the
@@ -137,24 +135,23 @@ THEOREM fib_def == \A n \in Nat: fib[n] = (IF n <= 1 THEN 1 ELSE fib[n-1] + fib[
   <1>b. ASSUME Mention(fib_unfixed) PROVE fib_fixed = [i \in Nat |-> fib_unfixed(fib_fixed, i)] BY <1>a, <1>b, RecursiveFcnOfNat
   <1> QED BY <1>b DEF Mention
 
-THEOREM base1 == (fib[0] = 1)
+\* While TLAPS claims to support recursive functions, they can be really awkward!
+\* This seemingly-obvious fact is quite difficult to prove.
+THEOREM unfold_fib == \A n \in Nat: fib[n] = (IF n <= 1 THEN 1 ELSE fib[n-1] + fib[n-2])
   BY fib_def
+
+THEOREM base1 == (fib[0] = 1)
+  BY unfold_fib
 
 THEOREM base2 == (fib[1] = 1)
-  BY fib_def
-
-LEMMA func_type == \A f, D, R: (DOMAIN f = D /\ \A x \in D: f[x] \in R) => f \in [D -> R]
-  <1> TAKE f
-  <1> TAKE D
-  <1> TAKE R
-  <1>1. SUFFICES ASSUME DOMAIN f = D, \A x \in D: f[x] \in R PROVE f \in [D -> R]
-        OBVIOUS
-  <1> QED
+  BY unfold_fib
 
 THEOREM fib_type == fib \in [Nat -> Nat]
-  <1>1. DOMAIN fib = Nat
-  <1>2. \A n \in Nat: fib[n] \in Nat
-  <1> QED BY func_type, <1>1, <1>2
+  <1> DEFINE P(n) == fib[n] \in Nat
+  <1> SUFFICES \A n \in Nat: P(n) BY fib_def
+  <1>a. ASSUME NEW n \in Nat PROVE (\A m \in 0..(n-1) : P(m)) => P(n) BY fib_def
+  <1> HIDE DEF P \* help the solver out
+  <1> QED BY <1>a, GeneralNatInduction
 
 THEOREM fib_positive == \A x \in Nat: fib[x] > 0
   <1> DEFINE P(n) == fib[n] > 0
@@ -170,7 +167,7 @@ THEOREM fib_positive == \A x \in Nat: fib[x] > 0
     <2> QED BY <2>1, <2>2
   \* ASSUME...PROVE is generally easier for TLAPS than implication or quantification
   <1>2. ASSUME NEW n \in Nat PROVE (\A m \in 0..(n-1) : P(m)) => P(n) BY <1>1
-  <1> HIDE DEF P \* necessary for unclear reasons
+  <1> HIDE DEF P \* help the solver out
   <1>3. \A n \in Nat: P(n) BY <1>2, GeneralNatInduction
   <1> QED BY <1>3 DEF P
 
