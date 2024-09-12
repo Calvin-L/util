@@ -1,0 +1,67 @@
+{
+    /*"tab_size": 4,*/
+	"always_show_minimap_viewport": true,
+	// "color_scheme": "Monokai.sublime-color-scheme",
+	// "color_scheme": "Mariana.sublime-color-scheme",
+	"default_line_ending": "unix",
+	"enable_tab_scrolling": false,
+	"ensure_newline_at_eof_on_save": true,
+	"file_exclude_patterns":
+	[
+		"*.pyc",
+		"*.pyo",
+		"*.exe",
+		"*.dll",
+		"*.obj",
+		"*.o",
+		"*.a",
+		"*.lib",
+		"*.so",
+		"*.dylib",
+		"*.ncb",
+		"*.sdf",
+		"*.suo",
+		"*.pdb",
+		"*.idb",
+		".DS_Store",
+		"*.class",
+		"*.psd",
+		"*.db",
+		"*.sublime-workspace",
+		"*.aux",
+		"*.bbl",
+		"*.fdb_latexmk",
+		"*.fls",
+		"*.out",
+		"*.dvi",
+		"*.eps",
+		"*.pdf",
+		"*.d",
+		"*.vo",
+		"*.vok",
+		"*.vos",
+		"*.glob"
+	],
+	"folder_exclude_patterns":
+	[
+		"__pycache__",
+		".git",
+		".svn",
+		".idea"
+	],
+	"font_size": 12,
+	"ignored_packages":
+	[
+		"Vintage",
+	],
+	"rulers":
+	[
+		80
+	],
+	"show_encoding": true,
+	"show_line_endings": true,
+	// "theme": "Default.sublime-theme",
+	"translate_tabs_to_spaces": true,
+	"theme": "auto",
+	"index_files": true,
+}
