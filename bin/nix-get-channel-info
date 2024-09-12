@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+curl -Lf 'https://monitoring.nixos.org/prometheus/api/v1/query?query=channel_revision' \
+    | jq '.data.result[] | .metric | {"channel": .channel, "rev": .revision}'
