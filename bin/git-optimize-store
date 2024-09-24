@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec git repack -a -d -f --depth=250 --window=250
