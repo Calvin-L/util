@@ -1,11 +1,20 @@
 # Collect a JFR trace with async-profiler (can be analyzed in JDK Mission
 # Control or IntelliJ):
 
+# ==== METHOD 1: for long-running processes ====
 # 1. start your process
 # 2. get its PID
 # 3. collect trace:
 async-profiler -e cpu,alloc,lock -d 60 -f out.jfr 'PID'
 # 4. open 'out.jfr' in your favorite tool
+
+# ==== METHOD 2: for short-running processes ====
+# 1a. Start your process with an extra flag to `java`:
+java -agentpath:/path/to/libasyncProfiler.dylib=start,event=wall,event=alloc,event=lock,file=out.jfr 'CLASS'
+# 1b. For projects like the Checker Framework that are plugins/processors for javac,
+#     use -J prefix:
+javac -J-agentpath:... -processor ... 'JAVAFILE'
+# 4. Open 'out.jfr' in your favorite tool
 
 # Available events (-e flag):
 #  > Basic events:
