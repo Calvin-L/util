@@ -15,7 +15,11 @@
 #         (pin "coq_8.17" coq_8_17)
 #       ]
 
-let nixpkgs = import <nixpkgs> {}; in
+# NOTE 2024/10/17: need coq_8_19 because CoqHamer isn't 8.20 compatible, see
+#   https://github.com/lukaszcz/coqhammer/issues/184
+let nixpkgs = (import <nixpkgs> {}).appendOverlays [(self: super: {
+  coq = super.coq_8_19;
+})]; in
 let nixjars = (import <nixjars> { inherit nixpkgs; }); in
 let calvin = (import <calvin> { inherit nixpkgs nixjars; }); in
 with nixpkgs;
@@ -32,13 +36,11 @@ pin = (name: p:
 );
 
 # need this so COQPATH works...
-# NOTE 2024/10/17: need coq_8_19 because CoqHamer isn't 8.20 compatible, see
-#   https://github.com/lukaszcz/coqhammer/issues/184
 coq-with-packages = p:
   runCommandLocal
   "${coq.name}-env"
   {
-    buildInputs = [bash coq_8_19 coq_8_19.ocamlPackages.findlib] ++ p;
+    buildInputs = [bash coq coq.ocamlPackages.findlib] ++ p;
   }
   ''
     echo "Env vars:"
