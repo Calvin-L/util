@@ -31,6 +31,34 @@ pin = (name: p:
   )
 );
 
+# need this so COQPATH works...
+# NOTE 2024/10/17: need coq_8_19 because CoqHamer isn't 8.20 compatible, see
+#   https://github.com/lukaszcz/coqhammer/issues/184
+coq-with-packages = p:
+  runCommandLocal
+  "${coq.name}-env"
+  {
+    buildInputs = [bash coq_8_19 coq_8_19.ocamlPackages.findlib] ++ p;
+  }
+  ''
+    echo "Env vars:"
+    echo "  PATH=$PATH"
+    echo "  OCAMLPATH=$OCAMLPATH"
+    echo "  COQPATH=$COQPATH"
+    mkdir -p "$out/bin"
+    for f in ${coq}/bin/*; do
+      n="$(basename "$f")"
+      echo "Wrapping $f as $out/bin/$n"
+      echo '#!/usr/bin/env bash' >"$out/bin/$n"
+      echo "export PATH='$PATH'" >>"$out/bin/$n"
+      echo "export OCAMLPATH='$OCAMLPATH'" >>"$out/bin/$n"
+      echo "export COQPATH='$COQPATH'" >>"$out/bin/$n"
+      echo "exec '$f' \"\$@\"" >>"$out/bin/$n"
+      chmod +x "$out/bin/$n"
+    done
+    patchShebangs --host "$out/bin"
+  '';
+
 in
 
 [
@@ -53,6 +81,7 @@ in
   calvin.tlatools-complete
   calvin.tlaps
   calvin.many-smt
+  (coq-with-packages [calvin.caltac])
 
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it
