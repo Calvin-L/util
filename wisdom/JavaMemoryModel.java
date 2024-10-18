@@ -91,4 +91,25 @@ FINAL FIELDS DEMYSTIFIED
 
     So it IS recursive, or at least one level deep.
 
+OPAQUE VS PLAIN
+
+    Ref: https://gee.cs.oswego.edu/dl/html/j9mm.html
+
+    In short:
+     - "Plain" is the "weakest" mode; it works like any non-volatile field.
+     - "Opaque" is one iota "stronger"; it guarantees a sane overwrite order,
+       eventual consistency, and bitwise atomicity, but NOT memory effects wrt.
+       other variables.
+
+    The idea is that the JVM can (perhaps) implement Opaque access without any
+    memory barriers, just using a single uncached memory read/write.
+
+    Opaque mode is generally NOT suitable for reading pointers, since it
+    doesn't guarantee ordering wrt. plain reads.  So if you obtain a pointer
+    via an Opaque read, its non-final fields might not be fully initialized.
+
+    It is suitable for primitive types int/long/etc when you just need SOME
+    historic value of the variable (any will do) AND you don't care about other
+    variables.
+
 */
