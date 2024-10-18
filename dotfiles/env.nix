@@ -66,7 +66,7 @@ in
 
   # ---- Core packages
   # nix-tree
-  (python3.withPackages (p: [p.mypy p.virtualenv p.z3]))
+  (python3.withPackages (p: [p.mypy p.virtualenv p.z3 p.requests]))
   # z3 # apparently bin included in Python package???
   jq.bin
   # jdk17
