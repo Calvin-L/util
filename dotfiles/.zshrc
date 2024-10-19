@@ -64,3 +64,6 @@ if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
   export NIX_PATH="$HOME/.nix-channels"
 fi
 # End Nix
+
+# direnv
+type direnv && eval "$(direnv hook zsh)"
