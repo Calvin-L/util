@@ -46,4 +46,10 @@ if [[ -d /usr/local/etc/bash_completion.d ]]; then
 fi
 
 # Nix
-if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+
+  # Declarative channel management; see https://checkoway.net/musings/nix/
+  export NIX_PATH="$HOME/.nix-channels"
+fi
+# End Nix
