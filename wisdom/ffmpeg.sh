@@ -51,3 +51,12 @@ ffmpeg \
     -map 0:0 \
     -map 0:1 \
     out.wav
+
+# To crop the video: -filter:v 'crop=w:h:x:y'
+# To scale the video to 100px wide, setting height to preserve aspect ratio: -filter:v 'scale=300:-1'
+# If you pass multiple -filter:v arguments, only the last one is applied.
+# To combine multiple filters, use one argument with comma-separated filters:
+ffmpeg \
+    -i file.webm
+    -filter:v 'crop=1080:656:0:608,scale=300:-1' \
+    out.webm
