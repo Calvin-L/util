@@ -79,6 +79,7 @@ in
   calvin.tlatools-complete
   calvin.tlaps
   calvin.many-smt
+  calvin.ezpsl
   (coq-with-packages [calvin.caltac])
 
   # ---- Things I do not want GC'd (but also do not want in my env)
