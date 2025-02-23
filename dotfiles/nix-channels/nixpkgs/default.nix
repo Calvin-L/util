@@ -1,6 +1,6 @@
 let src = builtins.fetchTarball {
-  url = "https://github.com/NixOS/nixpkgs/archive/4989a246d7a390a859852baddb1013f825435cee.tar.gz";
-  sha256 = "0mdyxfmhgqnyvfv104f6gjvqva7inizv1d6jjshbc532ykj51h4h";
+  url = "https://github.com/NixOS/nixpkgs/archive/dad564433178067be1fbdfcce23b546254b6d641.tar.gz";
+  sha256 = "0s5z920v4y6d5jb7kpqjsc489sls7glg9ybvbb5m37k7gkjbqzdy";
 }; in
 
 # NOTE 2024/11/19: Under normal circumstances, the Nix expressions
