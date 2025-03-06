@@ -37,4 +37,22 @@ let src = builtins.fetchTarball {
   #   coq = super.coq_8_19;
   #   coqPackages = super.coqPackages_8_19;
   # })
+
+  # fix an issue where emscripten can't find babel
+  #  > emcc: error: babel was not found! Please run "npm install" in Emscripten root directory to set up npm dependencies
+  # https://github.com/emscripten-core/emscripten/blob/58f77a5235dbb91894de4149cd8971b992923c7c/tools/shared.py#L271
+  (self: super: {
+    emscripten = super.emscripten.overrideAttrs (prev: {
+      prePatch = ''
+        substituteInPlace tools/shared.py --replace-fail \
+          '{name} was not found!' \
+          '{cmd} was not found!'
+      '';
+      postInstall = ''
+        mkdir -p $out/share/emscripten/node_modules/.bin
+        ln -s "$out/share/emscripten/node_modules/@babel/cli/bin/babel.js" "$out/share/emscripten/node_modules/.bin/babel"
+      '';
+    });
+  })
+
 ]
