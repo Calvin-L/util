@@ -15,4 +15,4 @@
 #   -i   install
 #   -r   remove all [others]
 #   -f   gather derivations from file
-exec nix-env -irf "$HOME/env.nix"
+exec nix-env --log-format bar-with-logs -irf "$HOME/env.nix"
