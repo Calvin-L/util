@@ -1,6 +1,6 @@
 let src = builtins.fetchTarball {
-  url = "https://github.com/NixOS/nixpkgs/archive/dad564433178067be1fbdfcce23b546254b6d641.tar.gz";
-  sha256 = "0s5z920v4y6d5jb7kpqjsc489sls7glg9ybvbb5m37k7gkjbqzdy";
+  url = "https://github.com/NixOS/nixpkgs/archive/e4b09e47ace7d87de083786b404bf232eb6c89d8.tar.gz";
+  sha256 = "1a2qvp2yz8j1jcggl1yvqmdxicbdqq58nv7hihmw3bzg9cjyqm26";
 }; in
 
 # NOTE 2024/11/19: Under normal circumstances, the Nix expressions
@@ -30,13 +30,14 @@ let src = builtins.fetchTarball {
 # the argument, and we get what we expect.  Wild!
 
 {...}@args: (import src args).appendOverlays [
+  # NOTE 2025/6/4: This is once again relevant; coq is becoming rocq and CoqHammer isn't compatible
   # NOTE 2025/1/1: This is now an example overlay
-  # # NOTE 2024/10/17: need coq_8_19 because CoqHamer isn't 8.20 compatible, see
-  # #   https://github.com/lukaszcz/coqhammer/issues/184
-  # (self: super: {
-  #   coq = super.coq_8_19;
-  #   coqPackages = super.coqPackages_8_19;
-  # })
+  # NOTE 2024/10/17: need coq_8_19 because CoqHamer isn't 8.20 compatible, see
+  #   https://github.com/lukaszcz/coqhammer/issues/184
+  (self: super: {
+    coq = super.coq_8_20;
+    coqPackages = super.coqPackages_8_20;
+  })
 
   # fix an issue where emscripten can't find babel
   #  > emcc: error: babel was not found! Please run "npm install" in Emscripten root directory to set up npm dependencies
