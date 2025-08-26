@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -ex
+
+f="$(mktemp)"
+tlc2 -dump dot,actionlabels,colorize "$f.dot" "$@"
+dot -Tpdf "$f.dot" -o "$f.pdf"
+open "$f.pdf"
