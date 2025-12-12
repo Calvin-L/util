@@ -1,7 +1,7 @@
 let src = builtins.fetchTarball {
-  # nixpkgs-24.11-darwin, 2025/9/23
-  url = "https://github.com/NixOS/nixpkgs/archive/5ab036a8d97cb9476fbe81b09076e6e91d15e1b6.tar.gz";
-  sha256 = "0fyhfcii8flpjq644k679nb92vvdv5jwmndimyd9a999p6hzxmwh";
+  # nixpkgs-25.11-darwin, 2025/12/11
+  url = "https://github.com/NixOS/nixpkgs/archive/62cac6c5d5b70601ff3da3e6573cb2d461f86953.tar.gz";
+  sha256 = "1w4j7f9hf0ks10066996ccpan9hla09caq313in5k3mwld0wk70z";
 }; in
 
 # NOTE 2024/11/19: Under normal circumstances, the Nix expressions
@@ -54,6 +54,19 @@ let src = builtins.fetchTarball {
         mkdir -p $out/share/emscripten/node_modules/.bin
         ln -s "$out/share/emscripten/node_modules/@babel/cli/bin/babel.js" "$out/share/emscripten/node_modules/.bin/babel"
       '';
+    });
+  })
+
+  # https://github.com/NixOS/nixpkgs/pull/469976
+  (self: super: {
+    cvs = super.cvs.overrideAttrs (prev: {
+      patches = [
+        "${src}/pkgs/by-name/cv/cvs/getcwd-chroot.patch"
+        (self.fetchurl {
+          url = "http://deb.debian.org/debian/pool/main/c/cvs/cvs_1.12.13+real-30.diff.gz";
+          sha256 = "085124619dfdcd3e53c726e049235791b67dcb9f71619f1e27c5f1cbdef0063e";
+        })
+      ];
     });
   })
 
