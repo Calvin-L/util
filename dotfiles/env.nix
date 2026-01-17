@@ -69,7 +69,7 @@ in
   (python3.withPackages (p: [p.mypy p.virtualenv p.z3-solver p.requests calvin.sqez]))
   # z3 # apparently bin included in Python package???
   jq.bin
-  # jdk17
+  jdk
   htop
   tree
   rlwrap
@@ -85,6 +85,7 @@ in
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it
   (pin "bashInteractive" bashInteractive)
+  (pin "jdk" jdk)
 ]
 
 ++ lib.optionals (builtins.pathExists ./local.nix) (import ./local.nix { nixpkgs=nixpkgs; nixjars=nixjars; calvin=calvin; pin=pin; })

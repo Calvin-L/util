@@ -16,8 +16,6 @@ fi
 
 export GPG_TTY="$(tty)"
 
-export JAVA_HOME="$(/usr/libexec/java_home)"
-
 # Ignore duplicate history items (e.g. if you issue "make && ./run.sh" over and over it is coalesced into one entry)
 # See also: https://www.bartbusschots.ie/s/2019/06/17/moving-my-bashrc-to-zshrc/
 setopt HIST_IGNORE_DUPS
@@ -62,6 +60,7 @@ if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
 
   # Declarative channel management; see https://checkoway.net/musings/nix/
   export NIX_PATH="$HOME/.nix-channels"
+  export JAVA_HOME="$HOME/.nix-profile/pins/jdk"
 fi
 # End Nix
 
