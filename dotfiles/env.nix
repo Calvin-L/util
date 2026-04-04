@@ -86,6 +86,8 @@ in
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it
   (pin "bashInteractive" bashInteractive)
+
+  # for JAVA_HOME (see shell rc file)
   (pin "jdk" jdk)
 ]
 
