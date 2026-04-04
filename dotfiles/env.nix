@@ -81,6 +81,7 @@ in
   calvin.many-smt
   calvin.ezpsl
   (coq-with-packages [calvin.caltac])
+  direnv
 
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it
