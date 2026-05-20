@@ -61,8 +61,12 @@ if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
   # Declarative channel management; see https://checkoway.net/musings/nix/
   export NIX_PATH="$HOME/.nix-channels"
   export JAVA_HOME="$HOME/.nix-profile/pins/jdk"
+  export FPATH="$HOME/.nix-profile/share/zsh/site-functions:$FPATH"
 fi
 # End Nix
+
+# autocompletion subsystem
+autoload -Uz compinit && compinit
 
 # direnv
 type direnv && eval "$(direnv hook zsh)"
