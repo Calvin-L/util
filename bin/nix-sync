@@ -15,4 +15,5 @@
 #   -i   install
 #   -r   remove all [others]
 #   -f   gather derivations from file
+ulimit -n 4096 # https://github.com/NixOS/nix/issues/8684
 exec nix-env --log-format bar-with-logs -irf "$HOME/env.nix"
