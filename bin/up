@@ -19,6 +19,7 @@ git stash
 num_stashes_2=`git stash list | wc -l`
 
 git pull --rebase
+git submodule update --recursive
 
 if [ $num_stashes_2 -gt $num_stashes_1 ]
 then
