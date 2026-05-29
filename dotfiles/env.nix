@@ -57,6 +57,11 @@ coq-with-packages = p:
     patchShebangs --host "$out/bin"
   '';
 
+local-pkgs =
+  if (builtins.pathExists ./local.nix)
+  then (import ./local.nix { nixpkgs=nixpkgs; nixjars=nixjars; calvin=calvin; pin=pin; })
+  else { extra-packages=[]; extra-python-packages=[]; };
+
 in
 
 [
@@ -65,8 +70,13 @@ in
   # cacert
 
   # ---- Core packages
-  # nix-tree
-  (python3.withPackages (p: [p.mypy p.virtualenv p.z3-solver p.requests calvin.sqez]))
+  (python3.withPackages (p: [
+    p.mypy
+    p.virtualenv
+    p.z3-solver
+    p.requests
+    calvin.sqez
+  ] ++ local-pkgs.extra-python-packages))
   # z3 # apparently bin included in Python package???
   jq.bin
   jdk
@@ -89,6 +99,4 @@ in
 
   # for JAVA_HOME (see shell rc file)
   (pin "jdk" jdk)
-]
-
-++ lib.optionals (builtins.pathExists ./local.nix) (import ./local.nix { nixpkgs=nixpkgs; nixjars=nixjars; calvin=calvin; pin=pin; })
+] ++ local-pkgs.extra-packages
