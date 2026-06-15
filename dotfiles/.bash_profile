@@ -55,4 +55,4 @@ fi
 # End Nix
 
 # direnv
-type direnv && eval "$(direnv hook zsh)"
+type direnv && eval "$(direnv hook bash)"
