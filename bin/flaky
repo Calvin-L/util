@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+import subprocess
+from dataclasses import dataclass
+from typing import Optional, Sequence
+
+
+@dataclass(frozen=True)
+class CLIOptions:
+    cmd: Sequence[str]
+    fail_if_contains: Optional[str]
+
+
+def parse_options(argv: Sequence[str]) -> CLIOptions:
+    p = argparse.ArgumentParser(
+        usage="flaky [options] -- [cmd]",
+        description="Re-run a flaky command until it fails")
+    p.add_argument("--contains", metavar="TEXT", help="Consider the command failed if its output contains TEXT")
+    p.add_argument("cmd", nargs="+")
+
+    args = p.parse_args(argv)
+
+    return CLIOptions(
+        cmd=args.cmd,
+        fail_if_contains=args.contains if args.contains else None)
+
+
+def run(args: CLIOptions) -> None:
+    n = 0
+    while True:
+        n += 1
+        print(f"Run {n}...")
+
+        out = subprocess.run(
+            args.cmd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, # "If you wish to capture and combine both streams into one, set stdout to PIPE and stderr to STDOUT"
+            text=True)
+
+        if args.fail_if_contains:
+            if args.fail_if_contains in out.stdout:
+                print(out.stdout)
+                break
+        else:
+            if out.returncode != 0:
+                print(out.stdout)
+                break
+
+
+if __name__ == "__main__":
+    run(parse_options(sys.argv[1:]))
