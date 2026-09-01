@@ -30,20 +30,22 @@ let src0 = builtins.fetchTarball {
 # But if we write `{...}@args: ...`, then the same command will supply `{}` for
 # the argument, and we get what we expect.  Wild!
 
+# let config = {
+#   contentAddressedByDefault = true;
+# }; in
+# {...}@args: (import src (args // {config=config;})).appendOverlays [
 {...}@args: (import src args).appendOverlays [
-  # NOTE 2025/6/4: This is once again relevant; coq is becoming rocq and CoqHammer isn't compatible
-  # NOTE 2025/1/1: This is now an example overlay
-  # NOTE 2024/10/17: need coq_8_19 because CoqHamer isn't 8.20 compatible, see
-  #   https://github.com/lukaszcz/coqhammer/issues/184
   (self: super: {
+    # NOTE 2025/6/4: This is once again relevant; coq is becoming rocq and CoqHammer isn't compatible
+    # NOTE 2025/1/1: This is now an example overlay
+    # NOTE 2024/10/17: need coq_8_19 because CoqHamer isn't 8.20 compatible, see
+    #   https://github.com/lukaszcz/coqhammer/issues/184
     coq = super.coq_8_20;
     coqPackages = super.coqPackages_8_20;
-  })
 
-  # fix an issue where emscripten can't find babel
-  #  > emcc: error: babel was not found! Please run "npm install" in Emscripten root directory to set up npm dependencies
-  # https://github.com/emscripten-core/emscripten/blob/58f77a5235dbb91894de4149cd8971b992923c7c/tools/shared.py#L271
-  (self: super: {
+    # fix an issue where emscripten can't find babel
+    #  > emcc: error: babel was not found! Please run "npm install" in Emscripten root directory to set up npm dependencies
+    # https://github.com/emscripten-core/emscripten/blob/58f77a5235dbb91894de4149cd8971b992923c7c/tools/shared.py#L271
     emscripten = super.emscripten.overrideAttrs (prev: {
       prePatch = ''
         substituteInPlace tools/shared.py --replace-fail \
@@ -55,10 +57,8 @@ let src0 = builtins.fetchTarball {
         ln -s "$out/share/emscripten/node_modules/@babel/cli/bin/babel.js" "$out/share/emscripten/node_modules/.bin/babel"
       '';
     });
-  })
 
-  # https://github.com/NixOS/nixpkgs/pull/469976
-  (self: super: {
+    # https://github.com/NixOS/nixpkgs/pull/469976
     cvs = super.cvs.overrideAttrs (prev: {
       patches = [
         "${src}/pkgs/by-name/cv/cvs/getcwd-chroot.patch"
@@ -69,5 +69,4 @@ let src0 = builtins.fetchTarball {
       ];
     });
   })
-
 ]
