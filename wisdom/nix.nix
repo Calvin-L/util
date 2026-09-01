@@ -25,6 +25,17 @@
 #   http://chriswarbo.net/projects/nixos/nix_shell_shebangs.html
 
 # -----------------------------------------------------------------------------
+# Content-addressed derivations (ca-derivations)
+
+# Basically completely broken when nix-env encounters a ca-derivation:
+# https://github.com/NixOS/nix/issues/6378
+
+# Related:
+# https://github.com/NixOS/nix/issues/12361
+# https://github.com/NixOS/nix/issues/11263
+# https://github.com/NixOS/nix/issues/5309
+
+# -----------------------------------------------------------------------------
 # Build file for the Nix package manager.
 # (Save this as default.nix in your project's directory.)
 # You can put yourself in a shell with everything necessary to build the
