@@ -1,7 +1,8 @@
-let src0 = builtins.fetchTarball {
-  # nixpkgs-25.11-darwin, 2026/1/9
-  url = "https://github.com/NixOS/nixpkgs/archive/35588f29848c57ea8ac86699278d2a410dab0adb.tar.gz";
-  sha256 = "1a72sahds1nsbyyxabzjwrrr1ljpbzgxc8zxnkfny9z6j5m30b7g";
+let src = builtins.fetchTarball {
+  # nixpkgs-26.05-darwin, 2026/9/18
+  # use `nix-get-channel-info` to find updates
+  url = "https://github.com/NixOS/nixpkgs/archive/0c32f40fe3e2a9adfc427fd5abc061a31043ea44.tar.gz";
+  sha256 = "11gv5qs8r9vljy5ja4figvfpflffip0ylnnqdik04054ni6crh2n";
 }; in
 
 # NOTE 2024/11/19: Under normal circumstances, the Nix expressions

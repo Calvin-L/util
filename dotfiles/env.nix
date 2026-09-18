@@ -90,7 +90,7 @@ in
   calvin.tlaps
   calvin.many-smt
   calvin.ezpsl
-  (coq-with-packages [calvin.caltac])
+  (coq-with-packages [calvin.caltac]) # 2026/9/18: ugh, broken for reasons I don't understand! see discussion: https://github.com/rocq-community/coq-nix-toolbox/issues/95
   direnv
 
   # ---- Things I do not want GC'd (but also do not want in my env)
