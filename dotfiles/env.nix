@@ -92,6 +92,7 @@ in
   calvin.ezpsl
   (coq-with-packages [calvin.caltac]) # 2026/9/18: ugh, broken for reasons I don't understand! see discussion: https://github.com/rocq-community/coq-nix-toolbox/issues/95
   direnv
+  calvin.verus
 
   # ---- Things I do not want GC'd (but also do not want in my env)
   # `bashInteractive` is a good choice because `nix-shell` always wants it

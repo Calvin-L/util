@@ -36,6 +36,11 @@ let src = builtins.fetchTarball {
 # }; in
 # {...}@args: (import src (args // {config=config;})).appendOverlays [
 {...}@args: (import src args).appendOverlays [
+  (import (builtins.fetchTarball {
+    url = "https://github.com/oxalica/rust-overlay/archive/fbdb2de9e7619d660ae7e8f752f38b261020b701.tar.gz";
+    sha256 = "197b5awkml4vx64yni705k2gnzr17acly30g7dj6y5pcbaz3sv45";
+  }))
+
   (self: super: {
     # NOTE 2025/6/4: This is once again relevant; coq is becoming rocq and CoqHammer isn't compatible
     # NOTE 2025/1/1: This is now an example overlay
