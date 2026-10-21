@@ -1,4 +1,4 @@
 import (builtins.fetchTarball {
-  url = "https://github.com/Calvin-L/calvins-nix-packages/archive/3ecd1e490c2465293afc5324a750ce7984558104.tar.gz";
-  sha256 = "1j3xjqswkbl04s89mh022h06w2as55xx1xfws7srghwzmlv1dvds";
+  url = "https://github.com/Calvin-L/calvins-nix-packages/archive/b4aa61e2fc7918ea9e77ace6243d208a944732b3.tar.gz";
+  sha256 = "12gmahlbzwsbzx985hwwqg4k12990fngxpc6a02iczz0idazxg45";
 })
